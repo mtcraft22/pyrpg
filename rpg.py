@@ -261,6 +261,7 @@ def start_battle_loop():
 			# Turno del enemigo
 			print(f"[Turno de {main_enemy.name}]")
 			perform_attack(main_enemy, main_player)
+        # El jugador sigue vivo tras el combate?
 		if (main_player.hp > 0):
 			print(f"¡Ganaste! Recibes {main_enemy.gold} oro y {main_enemy.xp} PE.\n")
 			main_player.gold += main_enemy.gold
@@ -275,7 +276,8 @@ def start_battle_loop():
 			print("=====FIN DE LA PARTIDA=====")
 			print("===========================")
 			print(bcolors.CLEAR)
-			return
+			time.sleep(1)
+			sys.exit()
 	print("=====¡PISO COMPLETADO!=====\n")
 
 def break_time_loop():
