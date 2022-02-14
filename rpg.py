@@ -266,19 +266,19 @@ def start_battle_loop():
 						i += 1
 						table.add_row([i, e.name, e.description])
 					print(table)
-					opcion2 = input(f"Selecciona un objeto [1-{i}]: ")
-					if int(opcion2) - 1 > len(main_player.items):
+					opcion2 = int(input(f"Selecciona un objeto [1-{i}]: ")) - 1
+					if opcion2 > len(main_player.items):
 						print(bcolors.RED + "OPCIÓN NO VÁLIDA.\n" + bcolors.CLEAR)
 						continue
 					selected_item = main_player.items[opcion2]
 					print(f"¡{main_player.name} usa {selected_item.name}!")
 					if selected_item.hpr > 0:
 						recover_hp(main_player, selected_item.hpr)
-						print(f"¡{main_player.name} ha recuperado {selected_item.hpr} PS!")
+						print(f"¡{main_player.name} recupera {selected_item.hpr} PS!")
 						main_player.draw_bar(1)
 					if selected_item.mpr > 0:
 						recover_mp(main_player, selected_item.mpr)
-						print(f"¡{main_player.name} ha recuperado {selected_item.hpr} PM!")
+						print(f"¡{main_player.name} recupera {selected_item.hpr} PM!")
 						# TODO: Añadir barra de PM.
 					main_player.items.pop(opcion2)
 				else:
