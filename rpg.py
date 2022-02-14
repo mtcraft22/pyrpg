@@ -50,6 +50,7 @@ class bcolors:
 	DARKYELLOW = '\033[33m'
 	YELLOW = '\033[93m'
 	RED = '\033[31m'
+	BOLD = '\033[1m'
 	CLEAR = '\033[0m'
 
 def initialize_enemies():
@@ -232,17 +233,20 @@ def check_level():
 		print(f"¡Subiste de nivel! Ahora eres nivel {main_player.level}.")
 		update_player_stats()
 
-def heal(target,amount):
+def recover_hp(target,amount):
 	target.hp = min(target.hp + amount, target.mhp)
+
+def recover_mp(target,amount):
+	target.mp = min(target.mp + amount, target.mmp)
 
 def start_battle_loop():
 	initialize_floor()
-	while (len(enemy_list) > 0):
+	while len(enemy_list) > 0:
 		random.shuffle(enemy_list)
 		main_enemy = enemy_list[0]
 		print(f"¡Un {main_enemy.name} te ataca!")
 		main_enemy.draw_bar(1)
-		while ((main_player.hp > 0)):
+		while main_player.hp > 0:
 			# Turno del jugador
 			print(f"[Turno de {main_player.name}]")
 			print(f"{bcolors.YELLOW}¿Qué desea hacer?{bcolors.CLEAR}")
@@ -253,19 +257,33 @@ def start_battle_loop():
 			opcion = input("Elige [1-4]: ")
 			if (opcion == "1"):
 				perform_attack(main_player, main_enemy)
-			if (opcion == "4"):
-				while True:
-					table = PrettyTable()
-					table.field_names = ["Nº","Nombre","Descripción"]
-					i = 0
-					if len(main_player.items) > 0:
-						for e in main_player.items:
-							i += 1
-							table.add_row([i, e.name, e.description])					
-						print("Selecciona un objeto:\n")
-					else:
-						print("No tienes objetos.")
-						break
+			elif (opcion == "4"):
+				table = PrettyTable()
+				table.field_names = ["Nº","Nombre","Descripción"]
+				i = 0
+				if len(main_player.items) > 0:
+					for e in main_player.items:
+						i += 1
+						table.add_row([i, e.name, e.description])
+					print(table)
+					opcion2 = input(f"Selecciona un objeto [1-{i}]: ")
+					if int(opcion2) - 1 > len(main_player.items):
+						print(bcolors.RED + "OPCIÓN NO VÁLIDA.\n" + bcolors.CLEAR)
+						continue
+					selected_item = main_player.items[opcion2]
+					print(f"¡{main_player.name} usa {selected_item.name}!")
+					if selected_item.hpr > 0:
+						recover_hp(main_player, selected_item.hpr)
+						print(f"¡{main_player.name} ha recuperado {selected_item.hpr} PS!")
+						main_player.draw_bar(1)
+					if selected_item.mpr > 0:
+						recover_mp(main_player, selected_item.mpr)
+						print(f"¡{main_player.name} ha recuperado {selected_item.hpr} PM!")
+						# TODO: Añadir barra de PM.
+					main_player.items.pop(opcion2)
+				else:
+					print("No tienes objetos.")
+					continue
 			else:
 				print(bcolors.RED + "OPCIÓN NO VÁLIDA.\n" + bcolors.CLEAR)
 				continue
@@ -294,7 +312,7 @@ def start_battle_loop():
 
 def break_time_loop():
 	print("Atisbaste un campamento. Sin pensarlo, entraste a la posada.")
-	print(f"{bcolors.YELLOW}Posadero Carlos{bcolors.CLEAR}: ¡Bienvenido a la posada! ¿Qué te trae por aquí?")
+	print(f"{bcolors.YELLOW}Posadero Pepito{bcolors.CLEAR}: ¡Bienvenido a la posada! ¿Qué te trae por aquí?")
 	while True:
 		print("1. Continuar la exploración")
 		print("2. Pasar la noche")
@@ -305,29 +323,29 @@ def break_time_loop():
 		opcion = input("Elige [1-5 o 9]: ")
 		print("")
 		if (opcion == "1"):
-			print(f"{bcolors.YELLOW}Posadero Carlos{bcolors.CLEAR}: Si abandonas la posada, no podrás volver a menos que venzas a todos los monstruos antes de volver. ¿Estás seguro?")
-			confirmacion = input("Elige [S/N]: ")
+			print(f"{bcolors.YELLOW}Posadero Pepito{bcolors.CLEAR}: Si abandonas la posada, no podrás volver a menos que venzas a todos los monstruos antes de volver. ¿Estás seguro?")
+			confirmacion = input("Elige [s/N]: ")
 			if (confirmacion == "s" or confirmacion == "S"):
-				print(f"{bcolors.YELLOW}Posadero Carlos{bcolors.CLEAR}: Ya veo. En ese caso, ¡cuídate!")
+				print(f"{bcolors.YELLOW}Posadero Pepito{bcolors.CLEAR}: Ya veo. En ese caso, ¡cuídate!")
 				os.system("pause")
 				os.system("cls")
 				break
 			else:
 				continue
 		elif (opcion == "2"):
-			print(f"{bcolors.YELLOW}Posadero Carlos{bcolors.CLEAR}: Serán {parameters.inn_cost} monedas de oro. ¿Quieres pasar la noche aquí?")
-			confirmacion = input("Elige [S/N]: ")
+			print(f"{bcolors.YELLOW}Posadero Pepito{bcolors.CLEAR}: Serán {parameters.inn_cost} monedas de oro. ¿Quieres pasar la noche aquí?")
+			confirmacion = input("Elige [s/N]: ")
 			if (confirmacion == "s" or confirmacion == "S"):
 				if (main_player.gold >= parameters.inn_cost):
 					main_player.gold -= parameters.inn_cost
 					print("Descansando...\n")
 					time.sleep(2)
-					heal(main_player, 9999)
+					recover_hp(main_player, 9999)
 					print("Te sientes lleno de energía.")
 					os.system("pause")
 					os.system("cls")
 				else:
-					print(f"{bcolors.YELLOW}Posadero Carlos{bcolors.CLEAR}: Hmm... Me parece que no tienes suficiente dinero. Vuelve cuando tengas más.")
+					print(f"{bcolors.YELLOW}Posadero Pepito{bcolors.CLEAR}: Hmm... Me parece que no tienes suficiente dinero. Vuelve cuando tengas más.")
 					os.system("pause")
 					os.system("cls")
 			else:
@@ -335,7 +353,7 @@ def break_time_loop():
 		elif (opcion == "3"):
 			while True:
 				# Bucle de la tienda
-				print(f"{bcolors.YELLOW}Tendero José{bcolors.CLEAR}: ¡Hola! ¿En que puedo ayudarle?")
+				print(f"{bcolors.YELLOW + bcolors.BOLD}Tendero José{bcolors.CLEAR}: ¡Hola! ¿En que puedo ayudarle?")
 				print("1. Comprar")
 				# TODO: posibilidad de vender un objeto que no necesites.
 				# print("2. Vender")
@@ -355,7 +373,7 @@ def break_time_loop():
 							break
 						selected_item = shop_item_list[int(opcion3)-1]
 						print(f"¿Quieres comprar {selected_item.name} por {selected_item.cost} monedas de oro?")
-						confirmacion = input("Elige [S/N]: ")
+						confirmacion = input("Elige [s/N]: ")
 						if (confirmacion == "s" or confirmacion == "S"):
 							if (main_player.gold >= selected_item.cost):
 								main_player.gold -= selected_item.cost
@@ -374,7 +392,7 @@ def break_time_loop():
 					break
 		elif (opcion == "9"):
 			print(f"{bcolors.RED}ATENCIÓN{bcolors.CLEAR}: Cualquier dato no guardado se perderá. ¿Salir de {parameters.game_name}?")
-			confirmacion = input("Elige [S/N]: ")
+			confirmacion = input("Elige [s/N]: ")
 			if (confirmacion == "s" or confirmacion == "S"):
 				os.system("cls")
 				sys.exit()
@@ -383,7 +401,7 @@ def break_time_loop():
 		else:
 			print(bcolors.RED + "OPCIÓN NO VÁLIDA.\n" + bcolors.CLEAR)
 			continue
-		print(f"{bcolors.YELLOW}Posadero Carlos{bcolors.CLEAR}: ¡Hola, viajero!")
+		print(f"{bcolors.YELLOW}Posadero Pepito{bcolors.CLEAR}: ¡Hola, viajero!")
 
 def start_game(save_file):
 	game_started = True
