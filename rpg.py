@@ -255,14 +255,14 @@ def start_battle_loop():
 				perform_attack(main_player, main_enemy)
 			if (opcion == "4"):
 				while True:
-					print("Selecciona un objeto:")
 					table = PrettyTable()
 					table.field_names = ["Nº","Nombre","Descripción"]
 					i = 0
 					if len(main_player.items) > 0:
 						for e in main_player.items:
 							i += 1
-							table.add_row([i, e.name, e.description])
+							table.add_row([i, e.name, e.description])					
+						print("Selecciona un objeto:\n")
 					else:
 						print("No tienes objetos.")
 						break
@@ -337,6 +337,7 @@ def break_time_loop():
 				# Bucle de la tienda
 				print(f"{bcolors.YELLOW}Tendero José{bcolors.CLEAR}: ¡Hola! ¿En que puedo ayudarle?")
 				print("1. Comprar")
+				# TODO: posibilidad de vender un objeto que no necesites.
 				# print("2. Vender")
 				print("3. Salir")
 				opcion2 = input("Elige [1-3]: ")
