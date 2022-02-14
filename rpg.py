@@ -193,7 +193,7 @@ class battler():
 
 # Clase del jugador
 class player(battler):
-	pass
+	items = []
 
 # Clase del enemigo
 class enemy(battler):
@@ -225,9 +225,9 @@ def perform_attack(attacker, target):
 		print(f"¡{target.name} ha sido asesinado!")
 
 def check_level():
-	if (main_player.xp >= parameters.base_xp * math.pow(main_player.level, parameters.accelerator_a) * math.pow(main_player.level, parameters.accelerator_b) + math.pow(main_player.level - 1, parameters.extra_xp)):
+	if (main_player.xp >= parameters.base_xp * math.pow(main_player.level, parameters.accelerator_a + parameters.accelerator_b) + math.pow(main_player.level - 1, parameters.extra_xp)):
 		main_player.temp_xp = main_player.xp
-		main_player.xp -= (main_player.xp >= parameters.base_xp * math.pow(main_player.level, parameters.accelerator_a) * math.pow(main_player.level, parameters.accelerator_b) + math.pow(main_player.level - 1, parameters.extra_xp))
+		main_player.xp -= (main_player.xp >= parameters.base_xp * math.pow(main_player.level, parameters.accelerator_a + parameters.accelerator_b) + math.pow(main_player.level - 1, parameters.extra_xp))
 		main_player.level += 1
 		print(f"¡Subiste de nivel! Ahora eres nivel {main_player.level}.")
 		update_player_stats()
@@ -253,6 +253,19 @@ def start_battle_loop():
 			opcion = input("Elige [1-4]: ")
 			if (opcion == "1"):
 				perform_attack(main_player, main_enemy)
+			if (opcion == "4"):
+				while True:
+					print("Selecciona un objeto:")
+					table = PrettyTable()
+					table.field_names = ["Nº","Nombre","Descripción"]
+					i = 0
+					if len(main_player.items) > 0:
+						for e in main_player.items:
+							i += 1
+							table.add_row([i, e.name, e.description])
+					else:
+						print("No tienes objetos.")
+						break
 			else:
 				print(bcolors.RED + "OPCIÓN NO VÁLIDA.\n" + bcolors.CLEAR)
 				continue
@@ -261,7 +274,6 @@ def start_battle_loop():
 			# Turno del enemigo
 			print(f"[Turno de {main_enemy.name}]")
 			perform_attack(main_enemy, main_player)
-        # El jugador sigue vivo tras el combate?
 		if (main_player.hp > 0):
 			print(f"¡Ganaste! Recibes {main_enemy.gold} oro y {main_enemy.xp} PE.\n")
 			main_player.gold += main_enemy.gold
@@ -340,12 +352,14 @@ def break_time_loop():
 						opcion3 = input(f"Elige [1-{i}] (Presione ENTER sin introducir un número para salir): ")
 						if (opcion3 == ""):
 							break
-						print(f"¿Quieres comprar {shop_item_list[int(opcion3)-1].name} por {shop_item_list[int(opcion3)-1].cost} monedas de oro?")
+						selected_item = shop_item_list[int(opcion3)-1]
+						print(f"¿Quieres comprar {selected_item.name} por {selected_item.cost} monedas de oro?")
 						confirmacion = input("Elige [S/N]: ")
 						if (confirmacion == "s" or confirmacion == "S"):
-							if (main_player.gold >= shop_item_list[int(opcion3)-1].cost):
-								main_player.gold -= shop_item_list[int(opcion3)-1].cost
-								print(f"¡Compraste {shop_item_list[int(opcion3)-1].name}!")
+							if (main_player.gold >= selected_item.cost):
+								main_player.gold -= selected_item.cost
+								main_player.items.append(selected_item)
+								print(f"¡Compraste {selected_item.name}!")
 							else:
 								print(f"{bcolors.YELLOW}Tendero José{bcolors.CLEAR}: Hmm... Me parece que no tienes suficiente dinero. Vuelve cuando tengas más.")
 								os.system("pause")
