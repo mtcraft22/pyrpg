@@ -1,0 +1,11 @@
+name=Slime
+mhp=10
+mmp=0
+atk=3
+def=1
+mat=0
+spd=2
+lck=1
+weight=10
+xp=6
+gold=2
