@@ -26,7 +26,7 @@ class parameters:
 	# incremento de defensa por nivel
 	increment_def = 0.8
 	# magia inicial, en nivel 1
-	initial_mat = 3
+	initial_mat = 4
 	# incremento de magia por nivel
 	increment_mat = 0.7
 	# velocidad inicial, en nivel 1
@@ -50,6 +50,7 @@ class bcolors:
 	DARKYELLOW = '\033[33m'
 	YELLOW = '\033[93m'
 	RED = '\033[31m'
+	BLUE = '\033[34m'
 	BOLD = '\033[1m'
 	CLEAR = '\033[0m'
 
@@ -88,6 +89,8 @@ def initialize_enemies():
 				newenemy.xp = int(v)
 			elif (k == "weight"):
 				newenemy.weight = int(v)
+			elif (k == "floor"):
+				newenemy.floor = int(v)
 		el.append(newenemy)
 		print(f'Cargado el archivo de datos del enemigo: {i}')
 	os.chdir('..')
@@ -95,8 +98,16 @@ def initialize_enemies():
 
 def initialize_floor():
 	for e in enemy_pool:
-		for i in range(e.weight):
-			enemy_list.append(copy.deepcopy(e))
+		w = e.weight
+		# ¿Podrá encontrarse al monstruo?
+		if main_player.floor >= e.floor:
+			while w >= random.randrange(1,10):
+				w -= 10
+				enemy_list.append(copy.deepcopy(e))
+			#for i in range(e.weight):
+			#	enemy_list.append(copy.deepcopy(e))
+		random.shuffle(enemy_list)
+
 
 def initialize_player():
 	p = player()
@@ -144,6 +155,40 @@ def initialize_shop_items():
 	os.chdir('..')
 	return si
 
+def initialize_skills():
+	sl = []
+	os.chdir('.\\skills')
+	for i in os.listdir(f'{os.getcwd()}'):
+		file = open(i,"rt")
+		newskill = skill()
+		for x in file.readlines():
+			line = x
+			k = line.split("=")[0]
+			v = line.split("=")[1]
+
+			if (k == "name"):
+				newskill.name = v.rstrip("\n")
+			elif (k == "description"):
+				newskill.description = v.rstrip("\n")
+			elif (k == "mpc"):
+				newskill.mpc = int(v)
+			elif (k == "pwr"):
+				newskill.pwr = int(v) / 10
+			elif (k == "heals"):
+				newskill.heals = v.lower() == "true"
+			elif (k == "level"):
+				newskill.level = int(v)
+			elif (k == "e1"):
+				newskill.e1 = v.rstrip("\n")
+			elif (k == "e2"):
+				newskill.e2 = v.rstrip("\n")
+			elif (k == "e3"):
+				newskill.e3 = v.rstrip("\n")
+		sl.append(newskill)
+		print(f'Cargado el archivo de datos de la habilidad: {i}')
+	os.chdir('..')
+	return sl
+
 def update_player_stats():
 	main_player.mhp = math.floor(parameters.increment_mhp * main_player.level + parameters.initial_mhp)
 	main_player.hp += math.floor(parameters.increment_mhp * main_player.level)
@@ -172,9 +217,10 @@ class battler():
 	temp_xp = 0
 	level = 1
 	weight = 0
+	floor = 1
 	# Dibuja una barra de vida.
 	# scale: escala de la barra (a menor valor, más grande será la barra).
-	def draw_bar(self,scale):
+	def draw_hp_bar(self,scale):
 		print(f"{self.name} [",end="")
 		color = bcolors.CLEAR
 		p = self.hp/self.mhp
@@ -189,7 +235,23 @@ class battler():
 		for i in range(max(math.floor((self.mhp-self.hp)/scale), 0)):
 			print(" ",end="")
 		print("] ",end="")
-		print(f"{self.hp}/{self.mhp} HP\n")
+		print(f"{self.hp}/{self.mhp} PS\n")
+	# Dibuja una barra de magia.
+	# scale: escala de la barra (a menor valor, más grande será la barra).
+	def draw_mp_bar(self,scale):
+		if self.mp <= 0:
+			return
+		for i in range(len(self.name) + 1):
+			print(" ", end="")
+		print("[",end="")
+		color = bcolors.BLUE
+		p = self.mp/self.mmp
+		for i in range(max(math.ceil(self.mp/scale), 0)):
+			print(color+"█", end=bcolors.CLEAR)
+		for i in range(max(math.floor((self.mmp-self.mp)/scale), 0)):
+			print(" ",end="")
+		print("] ",end="")
+		print(f"{self.mp}/{self.mmp} PM\n")
 		
 
 # Clase del jugador
@@ -199,6 +261,17 @@ class player(battler):
 # Clase del enemigo
 class enemy(battler):
 	pass
+
+class skill:
+	name = ""
+	description = ""
+	mpc = 0
+	pwr = 0
+	heals = False
+	level = 0
+	e1 = ""
+	e2 = ""
+	e3 = ""
 
 class item:
 	name = ""
@@ -217,7 +290,23 @@ def perform_attack(attacker, target):
 	damage = max(attacker.attack - target.defense, 1)
 	target.hp -= damage
 	print(f"¡{target.name} recibió {damage} puntos de daño!")
-	target.draw_bar(1)
+	target.draw_hp_bar(1)
+	target.draw_mp_bar(1)
+	if (target.hp > 0):
+		# Sigue vivo
+		pass
+	else:
+		# Enemigo derrotado
+		print(f"¡{target.name} ha sido asesinado!")
+
+def cast_skill(caster, skill, target):
+	print(f"¡{caster.name} lanza {skill.name}!")
+	caster.mp -= skill.mpc
+	caster.draw_mp_bar(1)
+	damage = skill.pwr * caster.magic
+	target.hp -= damage
+	print(f"¡{target.name} recibió {damage} puntos de daño!")
+	target.draw_hp_bar(1)
 	if (target.hp > 0):
 		# Sigue vivo
 		pass
@@ -232,6 +321,9 @@ def check_level():
 		main_player.level += 1
 		print(f"¡Subiste de nivel! Ahora eres nivel {main_player.level}.")
 		update_player_stats()
+		for s in skill_list:
+			if main_player.level == s.level:
+				print(f"¡Has aprendido {s.name}!")
 
 def recover_hp(target,amount):
 	target.hp = min(target.hp + amount, target.mhp)
@@ -241,23 +333,49 @@ def recover_mp(target,amount):
 
 def start_battle_loop():
 	initialize_floor()
+	print(f"[PISO {main_player.floor}]")
 	while len(enemy_list) > 0:
 		random.shuffle(enemy_list)
 		main_enemy = enemy_list[0]
 		print(f"¡Un {main_enemy.name} te ataca!")
-		main_enemy.draw_bar(1)
+		main_enemy.draw_hp_bar(1)
 		while main_player.hp > 0:
 			# Turno del jugador
 			print(f"[Turno de {main_player.name}]")
 			print(f"{bcolors.YELLOW}¿Qué desea hacer?{bcolors.CLEAR}")
 			print("1. Atacar")
-			print("2. Magia")
-			print("3. Defender")
+			print("2. Habilidad")
+			# print("3. Defender")
 			print("4. Objeto")
 			opcion = input("Elige [1-4]: ")
-			if (opcion == "1"):
+			if opcion == "1":
 				perform_attack(main_player, main_enemy)
-			elif (opcion == "4"):
+			elif opcion == "2":
+				# Menú de habilidad
+				table = PrettyTable()
+				table.field_names = ["Nº","Nombre","Descripción","Coste"]
+				i = 0
+				player_skill_list = []			
+				for s in skill_list:
+					if main_player.level >= s.level:
+						player_skill_list.append(copy.deepcopy(s))
+				if len(player_skill_list) > 0:
+					for s in player_skill_list:
+						i += 1
+						table.add_row([i, s.name, s.description, str(s.mpc) + " PM"])
+					print(table)
+					opcion2 = int(input(f"Selecciona una habilidad [1-{i}] (o 0 para cancelar): ")) - 1
+					if opcion2 == -1:
+						continue
+					if opcion2 > i:
+						print(bcolors.RED + "OPCIÓN NO VÁLIDA.\n" + bcolors.CLEAR)
+						continue
+					cast_skill(main_player, player_skill_list[opcion2], main_enemy)
+				else:
+					print("No has aprendido ninguna habilidad.")
+					continue
+			elif opcion == "4":
+				# Menú de objeto
 				table = PrettyTable()
 				table.field_names = ["Nº","Nombre","Descripción"]
 				i = 0
@@ -266,7 +384,9 @@ def start_battle_loop():
 						i += 1
 						table.add_row([i, e.name, e.description])
 					print(table)
-					opcion2 = int(input(f"Selecciona un objeto [1-{i}]: ")) - 1
+					opcion2 = int(input(f"Selecciona un objeto [1-{i}] (o 0 para cancelar): ")) - 1
+					if opcion2 == 0:
+						continue
 					if opcion2 > len(main_player.items):
 						print(bcolors.RED + "OPCIÓN NO VÁLIDA.\n" + bcolors.CLEAR)
 						continue
@@ -275,7 +395,7 @@ def start_battle_loop():
 					if selected_item.hpr > 0:
 						recover_hp(main_player, selected_item.hpr)
 						print(f"¡{main_player.name} recupera {selected_item.hpr} PS!")
-						main_player.draw_bar(1)
+						main_player.draw_hp_bar(1)
 					if selected_item.mpr > 0:
 						recover_mp(main_player, selected_item.mpr)
 						print(f"¡{main_player.name} recupera {selected_item.hpr} PM!")
@@ -308,12 +428,14 @@ def start_battle_loop():
 			print(bcolors.CLEAR)
 			time.sleep(1)
 			sys.exit()
-	print("=====¡PISO COMPLETADO!=====\n")
+	print(f"=====¡PISO {main_player.floor} COMPLETADO!=====\n")
+	main_player.floor += 1
 
 def break_time_loop():
 	print("Atisbaste un campamento. Sin pensarlo, entraste a la posada.")
 	print(f"{bcolors.YELLOW}Posadero Pepito{bcolors.CLEAR}: ¡Bienvenido a la posada! ¿Qué te trae por aquí?")
 	while True:
+		# Bucle del campamento
 		print("1. Continuar la exploración")
 		print("2. Pasar la noche")
 		print("3. Ir a la tienda")
@@ -353,7 +475,7 @@ def break_time_loop():
 		elif (opcion == "3"):
 			while True:
 				# Bucle de la tienda
-				print(f"{bcolors.YELLOW + bcolors.BOLD}Tendero José{bcolors.CLEAR}: ¡Hola! ¿En que puedo ayudarle?")
+				print(f"{bcolors.YELLOW}Tendero José{bcolors.CLEAR}: ¡Hola! ¿En que puedo ayudarle?")
 				print("1. Comprar")
 				# TODO: posibilidad de vender un objeto que no necesites.
 				# print("2. Vender")
@@ -429,6 +551,8 @@ enemy_pool = initialize_enemies()
 
 enemy_list = []
 shop_item_list = initialize_shop_items()
+
+skill_list = initialize_skills()
 
 # Limpiamos la pantalla y empezamos una partida nueva.
 time.sleep(1)

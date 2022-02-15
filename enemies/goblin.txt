@@ -1,0 +1,12 @@
+name=Goblin
+mhp=15
+mmp=0
+atk=4
+def=2
+mat=0
+spd=3
+lck=2
+weight=10
+xp=6
+gold=2
+floor=2
