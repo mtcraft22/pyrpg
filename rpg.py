@@ -44,6 +44,69 @@ class parameters:
 	accelerator_b = 1
 	# Parámetros de la fase de descanso
 	inn_cost = 10
+	# Diccionario de debilidades
+	weakness = {
+		"normal":	["fight"],
+		"fight"	:	["flying","psychic","fairy"],
+		"flying":	["rock","electric","ice"],
+		"poison":	["ground","psychic"],
+		"ground":	["water","grass","ice"],
+		"rock"	:	["fight","steel","water","grass"],
+		"bug"	:	["flying","rock","fire"],
+		"ghost"	:	["ghost","dark"],
+		"steel"	:	["fight","ground","fire"],
+		"fire"	:	["ground","rock","water"],
+		"water"	:	["grass","electric"],
+		"grass"	:	["flying","poison","bug","fire","ice"],
+		"electric":	["ground"],
+		"psychic":	["bug","ghost","dark"],
+		"ice"	:	["rock","steel","fire"],
+		"dragon":	["ice","dragon","fairy"],
+		"dark"	:	["fight","bug","fairy"],
+		"fairy"	:	["poison","steel"]
+	}
+	# Diccionario de resistencias
+	resistances = {
+		"normal":	[],
+		"fight"	:	["rock","bug","dark"],
+		"flying":	["fight","bug","grass"],
+		"poison":	["fight","poison","bug","grass","fairy"],
+		"ground":	["poison","rock"],
+		"rock"	:	["normal","flying","posion","fire"],
+		"bug"	:	["fight","ground","grass"],
+		"ghost"	:	["poison","bug"],
+		"steel"	:	["normal","flying","rock","bug","steel","grass","psychic","ice","dragon","fairy"],
+		"fire"	:	["bug","steel","ice"],
+		"water"	:	["steel","fire","water","ice"],
+		"grass"	:	["ground","water","grass","electric"],
+		"electric":	["ground","steel","electric"],
+		"psychic":	["fight","psychic"],
+		"ice"	:	["ice"],
+		"dragon":	["fire","water","grass","electric"],
+		"dark"	:	["ghost","dark"],
+		"fairy"	:	["fight","bug","dark"]
+	}
+	# Diccionario de inmunidades
+	immunities = {
+		"normal":	["ghost"],
+		"fight"	:	[],
+		"flying":	["ground"],
+		"poison":	[],
+		"ground":	["electric"],
+		"rock"	:	[],
+		"bug"	:	[],
+		"ghost"	:	["normal","fight"],
+		"steel"	:	["poison"],
+		"fire"	:	[],
+		"water"	:	[],
+		"grass"	:	[],
+		"electric":	[],
+		"psychic":	[],
+		"ice"	:	[],
+		"dragon":	[],
+		"dark"	:	["psychic"],
+		"fairy"	:	["dragon"]
+	}
 
 class bcolors:
 	GREEN = '\033[32m'
@@ -67,6 +130,8 @@ def initialize_enemies():
 
 			if (k == "name"):
 				newenemy.name = v.rstrip("\n")
+			elif (k == "element"):
+				newenemy.element = v.rstrip("\n")
 			elif (k == "mhp"):
 				newenemy.mhp = int(v)
 				newenemy.hp = int(v)
@@ -173,7 +238,9 @@ def initialize_skills():
 			elif (k == "mpc"):
 				newskill.mpc = int(v)
 			elif (k == "pwr"):
-				newskill.pwr = int(v) / 10
+				newskill.pwr = int(v) // 10
+			elif (k == "element"):
+				newskill.element = v.rstrip("\n")
 			elif (k == "heals"):
 				newskill.heals = v.lower() == "true"
 			elif (k == "level"):
@@ -203,6 +270,7 @@ def update_player_stats():
 # Clase base esencial para cualquier participante en la batalla
 class battler():
 	name = ""
+	element = ""
 	mhp = 0
 	hp = 0
 	mmp = 0
@@ -239,7 +307,7 @@ class battler():
 	# Dibuja una barra de magia.
 	# scale: escala de la barra (a menor valor, más grande será la barra).
 	def draw_mp_bar(self,scale):
-		if self.mp <= 0:
+		if self.mmp <= 0:
 			return
 		for i in range(len(self.name) + 1):
 			print(" ", end="")
@@ -267,6 +335,7 @@ class skill:
 	description = ""
 	mpc = 0
 	pwr = 0
+	element = ""
 	heals = False
 	level = 0
 	e1 = ""
@@ -303,10 +372,22 @@ def cast_skill(caster, skill, target):
 	print(f"¡{caster.name} lanza {skill.name}!")
 	caster.mp -= skill.mpc
 	caster.draw_mp_bar(1)
-	damage = skill.pwr * caster.magic
+	m = 1
+	print(f"{skill.element} VS {target.element}")
+	if skill.element in parameters.weakness[target.element]:
+		print("¡Es muy eficaz!")
+		m *= 2
+	if skill.element in parameters.resistances[target.element]:
+		print("No es muy eficaz...")
+		m /= 2
+	if skill.element in parameters.immunities[target.element]:
+		print(f"No afecta a {target.name}...")
+		m *= 0
+	damage = int(skill.pwr * caster.magic * m)
 	target.hp -= damage
-	print(f"¡{target.name} recibió {damage} puntos de daño!")
-	target.draw_hp_bar(1)
+	if damage > 0:
+		print(f"¡{target.name} recibió {damage} puntos de daño!")
+		target.draw_hp_bar(1)
 	if (target.hp > 0):
 		# Sigue vivo
 		pass
@@ -364,13 +445,21 @@ def start_battle_loop():
 						i += 1
 						table.add_row([i, s.name, s.description, str(s.mpc) + " PM"])
 					print(table)
-					opcion2 = int(input(f"Selecciona una habilidad [1-{i}] (o 0 para cancelar): ")) - 1
-					if opcion2 == -1:
-						continue
-					if opcion2 > i:
+					try:
+						opcion2 = input(f"Selecciona una habilidad [1-{i}] (o 0 para cancelar): ")
+						if opcion2 == "0":
+							continue
+						if int(opcion2) - 1 > i:
+							print(bcolors.RED + "OPCIÓN NO VÁLIDA.\n" + bcolors.CLEAR)
+							continue
+						selected_skill = player_skill_list[int(opcion2) - 1]
+						if main_player.mp >= selected_skill.mpc:
+							cast_skill(main_player, selected_skill, main_enemy)
+						else:
+							print(bcolors.RED + "PM Insuficientes.\n" + bcolors.CLEAR)
+							continue
+					except:
 						print(bcolors.RED + "OPCIÓN NO VÁLIDA.\n" + bcolors.CLEAR)
-						continue
-					cast_skill(main_player, player_skill_list[opcion2], main_enemy)
 				else:
 					print("No has aprendido ninguna habilidad.")
 					continue
@@ -384,23 +473,25 @@ def start_battle_loop():
 						i += 1
 						table.add_row([i, e.name, e.description])
 					print(table)
-					opcion2 = int(input(f"Selecciona un objeto [1-{i}] (o 0 para cancelar): ")) - 1
-					if opcion2 == 0:
-						continue
-					if opcion2 > len(main_player.items):
+					try:
+						opcion2 = input(f"Selecciona un objeto [1-{i}] (o 0 para cancelar): ")
+						if opcion2 == "0":
+							continue
+						if int(opcion2) - 1 > len(main_player.items):
+							print(bcolors.RED + "OPCIÓN NO VÁLIDA.\n" + bcolors.CLEAR)
+							continue
+						selected_item = main_player.items[int(opcion2) - 1]
+						print(f"¡{main_player.name} usa {selected_item.name}!")
+						if selected_item.hpr > 0:
+							recover_hp(main_player, selected_item.hpr)
+							print(f"¡{main_player.name} recupera {selected_item.hpr} PS!")
+							main_player.draw_hp_bar(1)
+						if selected_item.mpr > 0:
+							recover_mp(main_player, selected_item.mpr)
+							print(f"¡{main_player.name} recupera {selected_item.hpr} PM!")
+						main_player.items.pop(opcion2 - 1)
+					except:
 						print(bcolors.RED + "OPCIÓN NO VÁLIDA.\n" + bcolors.CLEAR)
-						continue
-					selected_item = main_player.items[opcion2]
-					print(f"¡{main_player.name} usa {selected_item.name}!")
-					if selected_item.hpr > 0:
-						recover_hp(main_player, selected_item.hpr)
-						print(f"¡{main_player.name} recupera {selected_item.hpr} PS!")
-						main_player.draw_hp_bar(1)
-					if selected_item.mpr > 0:
-						recover_mp(main_player, selected_item.mpr)
-						print(f"¡{main_player.name} recupera {selected_item.hpr} PM!")
-						# TODO: Añadir barra de PM.
-					main_player.items.pop(opcion2)
 				else:
 					print("No tienes objetos.")
 					continue
@@ -444,7 +535,7 @@ def break_time_loop():
 		print("9. Salir del juego")
 		opcion = input("Elige [1-5 o 9]: ")
 		print("")
-		if (opcion == "1"):
+		if opcion == "1":
 			print(f"{bcolors.YELLOW}Posadero Pepito{bcolors.CLEAR}: Si abandonas la posada, no podrás volver a menos que venzas a todos los monstruos antes de volver. ¿Estás seguro?")
 			confirmacion = input("Elige [s/N]: ")
 			if (confirmacion == "s" or confirmacion == "S"):
@@ -454,7 +545,7 @@ def break_time_loop():
 				break
 			else:
 				continue
-		elif (opcion == "2"):
+		elif opcion == "2":
 			print(f"{bcolors.YELLOW}Posadero Pepito{bcolors.CLEAR}: Serán {parameters.inn_cost} monedas de oro. ¿Quieres pasar la noche aquí?")
 			confirmacion = input("Elige [s/N]: ")
 			if (confirmacion == "s" or confirmacion == "S"):
@@ -463,6 +554,7 @@ def break_time_loop():
 					print("Descansando...\n")
 					time.sleep(2)
 					recover_hp(main_player, 9999)
+					recover_mp(main_player, 9999)
 					print("Te sientes lleno de energía.")
 					os.system("pause")
 					os.system("cls")
@@ -472,7 +564,7 @@ def break_time_loop():
 					os.system("cls")
 			else:
 				continue
-		elif (opcion == "3"):
+		elif opcion == "3":
 			while True:
 				# Bucle de la tienda
 				print(f"{bcolors.YELLOW}Tendero José{bcolors.CLEAR}: ¡Hola! ¿En que puedo ayudarle?")
@@ -481,7 +573,7 @@ def break_time_loop():
 				# print("2. Vender")
 				print("3. Salir")
 				opcion2 = input("Elige [1-3]: ")
-				if (opcion2 == "1"):
+				if opcion2 == "1":
 					while True:
 						table = PrettyTable()
 						table.field_names = ["Nº","Nombre","Precio","Descripción"]
@@ -490,24 +582,30 @@ def break_time_loop():
 							i += 1
 							table.add_row([i, e.name, e.cost, e.description])
 						print(table)
-						opcion3 = input(f"Elige [1-{i}] (Presione ENTER sin introducir un número para salir): ")
-						if (opcion3 == ""):
-							break
-						selected_item = shop_item_list[int(opcion3)-1]
-						print(f"¿Quieres comprar {selected_item.name} por {selected_item.cost} monedas de oro?")
-						confirmacion = input("Elige [s/N]: ")
-						if (confirmacion == "s" or confirmacion == "S"):
-							if (main_player.gold >= selected_item.cost):
-								main_player.gold -= selected_item.cost
-								main_player.items.append(selected_item)
-								print(f"¡Compraste {selected_item.name}!")
+						try:
+							opcion3 = input(f"Elige [1-{i}] (o 0 para cancelar): ")
+							if opcion3 == "0":
+								break
+							if int(opcion3) > i:
+								print(bcolors.RED + "OPCIÓN NO VÁLIDA.\n" + bcolors.CLEAR)
+								continue
+							selected_item = shop_item_list[int(opcion3)-1]
+							print(f"¿Quieres comprar {selected_item.name} por {selected_item.cost} monedas de oro?")
+							confirmacion = input("Elige [s/N]: ")
+							if (confirmacion == "s" or confirmacion == "S"):
+								if (main_player.gold >= selected_item.cost):
+									main_player.gold -= selected_item.cost
+									main_player.items.append(selected_item)
+									print(f"¡Compraste {selected_item.name}!")
+								else:
+									print(f"{bcolors.YELLOW}Tendero José{bcolors.CLEAR}: Hmm... Me parece que no tienes suficiente dinero. Vuelve cuando tengas más.")
+									os.system("pause")
+									os.system("cls")
 							else:
-								print(f"{bcolors.YELLOW}Tendero José{bcolors.CLEAR}: Hmm... Me parece que no tienes suficiente dinero. Vuelve cuando tengas más.")
-								os.system("pause")
-								os.system("cls")
-						else:
-							continue
-				if (opcion2 == "3"):
+								continue
+						except:
+							print(bcolors.RED + "OPCIÓN NO VÁLIDA.\n" + bcolors.CLEAR)
+				elif opcion2 == "3":
 					print(f"{bcolors.YELLOW}Tendero José{bcolors.CLEAR}: ¡Gracias por su compra!")
 					os.system("pause")
 					os.system("cls")
@@ -536,6 +634,7 @@ def start_game(save_file):
 		name = input("Introduce tu nombre: ")
 		main_player.name = name
 		print(f"Empezando partida como {name}...\n")
+		# ¡Empieza el juego!
 		while True:
 			start_battle_loop()
 			break_time_loop()
