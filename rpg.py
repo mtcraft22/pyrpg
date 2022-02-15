@@ -119,7 +119,7 @@ class bcolors:
 
 def initialize_enemies():
 	el = []
-	os.chdir('.\\enemies')
+	os.chdir('./enemies')
 	for i in os.listdir(f'{os.getcwd()}'):
 		file = open(i,"rt")
 		newenemy = enemy()
@@ -190,7 +190,7 @@ def initialize_player():
 
 def initialize_shop_items():
 	si = []
-	os.chdir('.\\items')
+	os.chdir('./items')
 	for i in os.listdir(f'{os.getcwd()}'):
 		file = open(i,"rt")
 		newitem = item()
@@ -222,7 +222,7 @@ def initialize_shop_items():
 
 def initialize_skills():
 	sl = []
-	os.chdir('.\\skills')
+	os.chdir('./skills')
 	for i in os.listdir(f'{os.getcwd()}'):
 		file = open(i,"rt")
 		newskill = skill()
