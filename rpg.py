@@ -568,6 +568,7 @@ def break_time_loop():
 			while True:
 				# Bucle de la tienda
 				print(f"{bcolors.YELLOW}Tendero José{bcolors.CLEAR}: ¡Hola! ¿En que puedo ayudarle?")
+				print(f"Dinero disponible: {main_player.gold}")
 				print("1. Comprar")
 				# TODO: posibilidad de vender un objeto que no necesites.
 				# print("2. Vender")
@@ -597,6 +598,7 @@ def break_time_loop():
 									main_player.gold -= selected_item.cost
 									main_player.items.append(selected_item)
 									print(f"¡Compraste {selected_item.name}!")
+									print(f"Dinero disponible: {main_player.gold}")
 								else:
 									print(f"{bcolors.YELLOW}Tendero José{bcolors.CLEAR}: Hmm... Me parece que no tienes suficiente dinero. Vuelve cuando tengas más.")
 									os.system("pause")
