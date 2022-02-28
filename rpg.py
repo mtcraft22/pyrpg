@@ -46,66 +46,66 @@ class parameters:
 	inn_cost = 10
 	# Diccionario de debilidades
 	weakness = {
-		"normal":	["fight"],
-		"fight"	:	["flying","psychic","fairy"],
-		"flying":	["rock","electric","ice"],
-		"poison":	["ground","psychic"],
-		"ground":	["water","grass","ice"],
-		"rock"	:	["fight","steel","water","grass"],
-		"bug"	:	["flying","rock","fire"],
-		"ghost"	:	["ghost","dark"],
-		"steel"	:	["fight","ground","fire"],
-		"fire"	:	["ground","rock","water"],
-		"water"	:	["grass","electric"],
-		"grass"	:	["flying","poison","bug","fire","ice"],
-		"electric":	["ground"],
-		"psychic":	["bug","ghost","dark"],
-		"ice"	:	["rock","steel","fire"],
-		"dragon":	["ice","dragon","fairy"],
-		"dark"	:	["fight","bug","fairy"],
-		"fairy"	:	["poison","steel"]
+		"normal":	("fight"),
+		"fight"	:	("flying","psychic","fairy"),
+		"flying":	("rock","electric","ice"),
+		"poison":	("ground","psychic"),
+		"ground":	("water","grass","ice"),
+		"rock"	:	("fight","steel","water","grass"),
+		"bug"	:	("flying","rock","fire"),
+		"ghost"	:	("ghost","dark"),
+		"steel"	:	("fight","ground","fire"),
+		"fire"	:	("ground","rock","water"),
+		"water"	:	("grass","electric"),
+		"grass"	:	("flying","poison","bug","fire","ice"),
+		"electric":	("ground"),
+		"psychic":	("bug","ghost","dark"),
+		"ice"	:	("rock","steel","fire"),
+		"dragon":	("ice","dragon","fairy"),
+		"dark"	:	("fight","bug","fairy"),
+		"fairy"	:	("poison","steel")
 	}
 	# Diccionario de resistencias
 	resistances = {
-		"normal":	[],
-		"fight"	:	["rock","bug","dark"],
-		"flying":	["fight","bug","grass"],
-		"poison":	["fight","poison","bug","grass","fairy"],
-		"ground":	["poison","rock"],
-		"rock"	:	["normal","flying","posion","fire"],
-		"bug"	:	["fight","ground","grass"],
-		"ghost"	:	["poison","bug"],
-		"steel"	:	["normal","flying","rock","bug","steel","grass","psychic","ice","dragon","fairy"],
-		"fire"	:	["bug","steel","ice"],
-		"water"	:	["steel","fire","water","ice"],
-		"grass"	:	["ground","water","grass","electric"],
-		"electric":	["ground","steel","electric"],
-		"psychic":	["fight","psychic"],
-		"ice"	:	["ice"],
-		"dragon":	["fire","water","grass","electric"],
-		"dark"	:	["ghost","dark"],
-		"fairy"	:	["fight","bug","dark"]
+		"normal":	(),
+		"fight"	:	("rock","bug","dark"),
+		"flying":	("fight","bug","grass"),
+		"poison":	("fight","poison","bug","grass","fairy"),
+		"ground":	("poison","rock"),
+		"rock"	:	("normal","flying","posion","fire"),
+		"bug"	:	("fight","ground","grass"),
+		"ghost"	:	("poison","bug"),
+		"steel"	:	("normal","flying","rock","bug","steel","grass","psychic","ice","dragon","fairy"),
+		"fire"	:	("bug","steel","ice"),
+		"water"	:	("steel","fire","water","ice"),
+		"grass"	:	("ground","water","grass","electric"),
+		"electric":	("ground","steel","electric"),
+		"psychic":	("fight","psychic"),
+		"ice"	:	("ice"),
+		"dragon":	("fire","water","grass","electric"),
+		"dark"	:	("ghost","dark"),
+		"fairy"	:	("fight","bug","dark")
 	}
 	# Diccionario de inmunidades
 	immunities = {
-		"normal":	["ghost"],
-		"fight"	:	[],
-		"flying":	["ground"],
-		"poison":	[],
-		"ground":	["electric"],
-		"rock"	:	[],
-		"bug"	:	[],
-		"ghost"	:	["normal","fight"],
-		"steel"	:	["poison"],
-		"fire"	:	[],
-		"water"	:	[],
-		"grass"	:	[],
-		"electric":	[],
-		"psychic":	[],
-		"ice"	:	[],
-		"dragon":	[],
-		"dark"	:	["psychic"],
-		"fairy"	:	["dragon"]
+		"normal":	("ghost"),
+		"fight"	:	(),
+		"flying":	("ground"),
+		"poison":	(),
+		"ground":	("electric"),
+		"rock"	:	(),
+		"bug"	:	(),
+		"ghost"	:	("normal","fight"),
+		"steel"	:	("poison"),
+		"fire"	:	(),
+		"water"	:	(),
+		"grass"	:	(),
+		"electric":	(),
+		"psychic":	(),
+		"ice"	:	(),
+		"dragon":	(),
+		"dark"	:	("psychic"),
+		"fairy"	:	("dragon")
 	}
 
 class bcolors:
@@ -567,6 +567,7 @@ def break_time_loop():
 		elif opcion == "3":
 			while True:
 				# Bucle de la tienda
+				
 				print(f"{bcolors.YELLOW}Tendero José{bcolors.CLEAR}: ¡Hola! ¿En que puedo ayudarle?")
 				print(f"Dinero disponible: {main_player.gold}")
 				print("1. Comprar")

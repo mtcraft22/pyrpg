@@ -1,15 +1,38 @@
-from encodings import utf_8
-import os 
+
+import os,platform
+
+
+directories=[]
+if platform.system()=="Windows":
+    directories=[".\enemies",".\items",".\skills"]
+else:
+    directories=["./enemies","./items","./skills"]
+    
+   
+
+
+
 class files():
-    def __init__(self,dir,mode):
-        self.dir=dir
+    def __init__(self,file,mode):
+        self.file=file
+        self.direcion=None
+        self.directory=None
+        self.content=None   
         self.mode=mode
-        self.file_name="file_name"
-    def get_cotent(self):
-        with open(self.dir,self.mode,utf=utf_8) as a:
+    def set_format(self):
+        for i in directories:
+            if self.file in os.listdir(i):
+                self.directory= i
+            else:
+                continue 
+        self.direcion=self.directory + "\\" + self.file
+        with open (self.direcion,self.mode) as a :
             self.content=a.readlines()
-
-
-skills=files(mode="r",dir="skills\\fireball.txt")
-skills.get_cotent()
+    def set_items(self):
+        if self.directory== ".\enemies":
+            
+skills=files(mode="r",file="fireball.txt")
+skills.set_format()
 print(skills.content)
+
+

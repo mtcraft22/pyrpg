@@ -1,0 +1,8 @@
+name=Poción
+description=Restaura 40 PS i 8 PM.
+cost=35
+hpr=40
+mpr=8
+e1=
+e2=
+e3=
