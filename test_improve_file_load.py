@@ -4,7 +4,7 @@ import os,platform
 
 directories=[]
 if platform.system()=="Windows":
-    directories=[".\enemies",".\items",".\skills"]
+    directories=[".\\enemies",".\\items",".\\skills"]
 else:
     directories=["./enemies","./items","./skills"]
     
