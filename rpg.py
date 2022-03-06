@@ -108,7 +108,7 @@ class parameters:
 		"fairy"	:	("dragon")
 	}
 
-class bcolors:
+class bcolors:#implementadotodos los colores 
 	GREEN = '\033[32m'
 	DARKYELLOW = '\033[33m'
 	YELLOW = '\033[93m'
@@ -331,26 +331,26 @@ class enemy(battler):
 	pass
 
 class skill:
-	name = ""
-	description = ""
-	mpc = 0
-	pwr = 0
-	element = ""
-	heals = False
-	level = 0
-	e1 = ""
-	e2 = ""
-	e3 = ""
+	name = ""#implementado
+	description = ""#implementado
+	mpc = 0#implementado
+	pwr = 0#implementado
+	element = ""#implementado
+	heals = False#implementado
+	level = 0#implementado
+	e1 = ""#implementado
+	e2 = ""#implementado
+	e3 = ""#implementado
 
 class item:
-	name = ""
-	description = ""
-	cost = 0
-	hpr = 0
-	mpr = 0
-	e1 = ""
-	e2 = ""
-	e3 = ""
+	name = ""#implementado
+	description = ""#implementado
+	cost = 0#implementado
+	hpr = 0#implementado
+	mpr = 0#implementado
+	e1 = ""#implementado
+	e2 = ""#implementado
+	e3 = ""#implementado
 
 battlers = []
 
