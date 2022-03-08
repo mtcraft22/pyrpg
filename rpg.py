@@ -5,7 +5,29 @@ import os.path
 import random
 import sys
 import time
+'''
+import os
+import time
+import win32api
+'''a = 0
+l1 = []
 
+while a < 10:
+    os.system("cls")
+    l1.append("█")
+    print("".join(l1))
+    a += 1
+    time.sleep(1)'''
+while True:
+    a = win32api.GetKeyState(0x25)
+    aa = win32api.GetKeyState(0x27)
+    if a < 0:
+        print("viva phyton")
+    elif aa < 0:
+        print("viva phyton2")
+    time.sleep(0.1)'''
+
+''' pip install pywin32'''
 from prettytable import PrettyTable
 
 
