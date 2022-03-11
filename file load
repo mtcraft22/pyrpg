@@ -1,0 +1,24 @@
+import os
+import json
+from unicodedata import name
+
+lista_items= os.listdir(".\items")
+lista_habilidades= os.listdir(".\skills")
+lista_enemigos= os.listdir(".\enemies")
+
+os.chdir(".\items")
+
+
+
+
+class Padre_items:
+ 
+    items_cargados={}
+    for i in lista_items:
+        with open(lista_items[0],"r") as co:
+            al=json.loads(co.readline())
+        items_cargados[i]=al
+
+items_lod=Padre_items()
+
+print(items_lod.items_cargados)
