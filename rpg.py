@@ -5,31 +5,8 @@ import os.path
 import random
 import sys
 import time
-'''
-import os
-import time
-import win32api
-'''a = 0
-l1 = []
-
-while a < 10:
-    os.system("cls")
-    l1.append("█")
-    print("".join(l1))
-    a += 1
-    time.sleep(1)'''
-while True:
-    a = win32api.GetKeyState(0x25)
-    aa = win32api.GetKeyState(0x27)
-    if a < 0:
-        print("viva phyton")
-    elif aa < 0:
-        print("viva phyton2")
-    time.sleep(0.1)'''
-
-''' pip install pywin32'''
 from prettytable import PrettyTable
-
+import file_load
 
 class Parameters:
 	# nombre del juego
@@ -71,7 +48,7 @@ class Parameters:
 	inn_cost = 10
 	# Diccionario de debilidades
 	weakness = {
-		"normal":	"fight",
+		"normal":	("fight"),
 		"fight"	:	("flying", "psychic", "fairy"),
 		"flying":	("rock", "electric", "ice"),
 		"poison":	("ground", "psychic"),
@@ -83,7 +60,7 @@ class Parameters:
 		"fire"	:	("ground", "rock", "water"),
 		"water"	:	("grass", "electric"),
 		"grass"	:	("flying", "poison", "bug", "fire", "ice"),
-		"electric":	"ground",
+		"electric":	("ground"),
 		"psychic":	("bug", "ghost", "dark"),
 		"ice"	:	("rock", "steel", "fire"),
 		"dragon":	("ice", "dragon", "fairy"),
@@ -92,7 +69,7 @@ class Parameters:
 	}
 	# Diccionario de resistencias
 	resistances = {
-		"normal":	(),
+		"normal":	(None),
 		"fight"	:	("rock", "bug", "dark"),
 		"flying":	("fight", "bug", "grass"),
 		"poison":	("fight", "poison", "bug", "grass", "fairy"),
@@ -106,35 +83,35 @@ class Parameters:
 		"grass"	:	("ground", "water", "grass", "electric"),
 		"electric":	("ground", "steel", "electric"),
 		"psychic":	("fight", "psychic"),
-		"ice"	:	"ice",
+		"ice"	:	("ice"),
 		"dragon":	("fire", "water", "grass", "electric"),
 		"dark"	:	("ghost", "dark"),
 		"fairy"	:	("fight", "bug", "dark")
 	}
 	# Diccionario de inmunidades
 	immunities = {
-		"normal":	"ghost",
-		"fight"	:	(),
-		"flying":	"ground",
-		"poison":	(),
-		"ground":	"electric",
-		"rock"	:	(),
-		"bug"	:	(),
-		"ghost"	:	("normal", "fight"),
-		"steel"	:	"poison",
-		"fire"	:	(),
-		"water"	:	(),
-		"grass"	:	(),
-		"electric":	(),
-		"psychic":	(),
-		"ice"	:	(),
-		"dragon":	(),
-		"dark"	:	"psychic",
-		"fairy"	:	"dragon"
+		"normal":	("ghost"),
+		"fight"	:	(None),
+		"flying":	("ground"),
+		"poison":	(None),
+		"ground":	("electric"),
+		"rock"	:	(None),
+		"bug"	:	(None),
+		"ghost"	:	("normal", "fight")
+		"steel"	:	("poison")
+		"fire"	:	(None),
+		"water"	:	(None),
+		"grass"	:	(None),
+		"electric":	(None),
+		"psychic":	(None),
+		"ice"	:	(None),
+		"dragon":	(None),
+		"dark"	:	("psychic")
+		"fairy"	:	("dragon")
 	}
 
 
-class Bcolors:  # implementado todos los colores
+class Bcolors:
 	GREEN = '\033[32m'
 	DARK_YELLOW = '\033[33m'
 	YELLOW = '\033[93m'
@@ -143,7 +120,7 @@ class Bcolors:  # implementado todos los colores
 	BOLD = '\033[1m'
 	CLEAR = '\033[0m'
 
-
+'''
 def initialize_enemies():
 	el = []
 	os.chdir('./enemies')
@@ -186,7 +163,7 @@ def initialize_enemies():
 		el.append(new_enemy)
 		print(f'Cargado el archivo de datos del enemigo: {i}')
 	os.chdir('..')
-	return el
+	return el'''
 
 
 def initialize_floor():
@@ -216,40 +193,11 @@ def initialize_player():
 	p.luck = 2
 	return p
 
-
 def initialize_shop_items():
-	si = []
-	os.chdir('./items')
-	for i in os.listdir(f'{os.getcwd()}'):
-		file = open(i, "rt")
-		new_item = Item()
-		for x in file.readlines():
-			line = x
-			k = line.split("=")[0]
-			v = line.split("=")[1]
+	for i in file_load.Padre_Items.items_cargados:
+		shop_item_list.apend[i]
 
-			if k == "name":
-				new_item.name = v.rstrip("\n")
-			elif k == "description":
-				new_item.description = v.rstrip("\n")
-			elif k == "cost":
-				new_item.cost = int(v)
-			elif k == "hpr":
-				new_item.hpr = int(v)
-			elif k == "mpr":
-				new_item.mpr = int(v)
-			elif k == "e1":
-				new_item.e1 = v.rstrip("\n")
-			elif k == "e2":
-				new_item.e2 = v.rstrip("\n")
-			elif k == "e3":
-				new_item.e3 = v.rstrip("\n")
-		si.append(new_item)
-		print(f'Cargado el archivo de datos del objeto: {i}')
-	os.chdir('..')
-	return si
-
-
+'''
 def initialize_skills():
 	sl = []
 	os.chdir('./skills')
@@ -284,7 +232,7 @@ def initialize_skills():
 		sl.append(new_skill)
 		print(f'Cargado el archivo de datos de la habilidad: {i}')
 	os.chdir('..')
-	return sl
+	return sl'''
 
 
 def update_player_stats():
