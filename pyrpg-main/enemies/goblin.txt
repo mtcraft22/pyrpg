@@ -1,0 +1,13 @@
+name=Goblin
+element=ground
+mhp=15
+mmp=0
+atk=4
+def=2
+mat=0
+spd=4
+lck=2
+weight=10
+xp=10
+gold=5
+floor=2

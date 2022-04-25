@@ -1,0 +1,10 @@
+name=Bola de Fuego
+description=Lanza una gran bola de fuego contra un enemigo, infligiéndole bastante daño.
+mpc=4
+pwr=15
+element=fire
+heals=False
+level=2
+e1=
+e2=
+e3=
