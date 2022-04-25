@@ -1,8 +1,0 @@
-name=Poción_magica
-description=Restaura 4 puntos de magia.
-cost=15
-hpr=0
-mpr=4
-e1= 
-e2=
-e3=
