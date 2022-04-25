@@ -1,4 +1,4 @@
-import math
+﻿import math
 import os, os.path
 import sys
 import random
@@ -119,7 +119,7 @@ class bcolors:
 
 def initialize_enemies():
 	el = []
-	os.chdir('./enemies')
+	os.chdir('./enemies/')
 	for i in os.listdir(f'{os.getcwd()}'):
 		file = open(i,"rt")
 		newenemy = enemy()
