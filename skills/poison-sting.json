@@ -1,0 +1,10 @@
+{
+    "name": "Picadura venenosa",
+    "description": "Pica al enemigo, haciendo un poco de daño y enevenenando de vez en cuando.",
+    "mpc": 0,
+    "pwr": 10,
+    "element": "poison",
+    "heals": false,
+    "level": -1,
+    "effects": []
+}

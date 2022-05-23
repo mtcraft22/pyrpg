@@ -4,6 +4,7 @@ import sys
 import random
 import time
 import copy
+import json
 from prettytable import PrettyTable
 
 class parameters:
@@ -121,43 +122,12 @@ def initialize_enemies():
 	el = []
 	os.chdir('./enemies/')
 	for i in os.listdir(f'{os.getcwd()}'):
-		file = open(i,"rt")
-		newenemy = enemy()
-		for x in file.readlines():
-			line = x
-			k = line.split("=")[0]
-			v = line.split("=")[1]
-
-			if (k == "name"):
-				newenemy.name = v.rstrip("\n")
-			elif (k == "element"):
-				newenemy.element = v.rstrip("\n")
-			elif (k == "mhp"):
-				newenemy.mhp = int(v)
-				newenemy.hp = int(v)
-			elif (k == "mmp"):
-				newenemy.mmp = int(v)
-				newenemy.mp = int(v)
-			elif (k == "atk"):
-				newenemy.attack = int(v)
-			elif (k == "def"):
-				newenemy.defense = int(v)
-			elif (k == "mat"):
-				newenemy.magic = int(v)
-			elif (k == "spd"):
-				newenemy.spd = int(v)
-			elif (k == "lck"):
-				newenemy.lck = int(v)
-			elif (k == "gold"):
-				newenemy.gold = int(v)
-			elif (k == "xp"):
-				newenemy.xp = int(v)
-			elif (k == "weight"):
-				newenemy.weight = int(v)
-			elif (k == "floor"):
-				newenemy.floor = int(v)
-		el.append(newenemy)
-		print(f'Cargado el archivo de datos del enemigo: {i}')
+		if os.path.isfile(i):
+			file = open(i,"rt")
+			raw = json.loads(file.read())
+			newenemy = enemy(raw)
+			el.append(newenemy)
+			print(f'Cargado el archivo de datos del enemigo: {i}')
 	os.chdir('..')
 	return el
 
@@ -177,6 +147,7 @@ def initialize_floor():
 def initialize_player():
 	p = player()
 	p.name = ""
+	p.element = "normal"
 	p.mhp = 10
 	p.hp = 10
 	p.mmp = 7
@@ -225,32 +196,8 @@ def initialize_skills():
 	os.chdir('./skills')
 	for i in os.listdir(f'{os.getcwd()}'):
 		file = open(i,"rt")
-		newskill = skill()
-		for x in file.readlines():
-			line = x
-			k = line.split("=")[0]
-			v = line.split("=")[1]
-
-			if (k == "name"):
-				newskill.name = v.rstrip("\n")
-			elif (k == "description"):
-				newskill.description = v.rstrip("\n")
-			elif (k == "mpc"):
-				newskill.mpc = int(v)
-			elif (k == "pwr"):
-				newskill.pwr = int(v) // 10
-			elif (k == "element"):
-				newskill.element = v.rstrip("\n")
-			elif (k == "heals"):
-				newskill.heals = v.lower() == "true"
-			elif (k == "level"):
-				newskill.level = int(v)
-			elif (k == "e1"):
-				newskill.e1 = v.rstrip("\n")
-			elif (k == "e2"):
-				newskill.e2 = v.rstrip("\n")
-			elif (k == "e3"):
-				newskill.e3 = v.rstrip("\n")
+		raw = json.loads(file.read())
+		newskill = skill(raw)	
 		sl.append(newskill)
 		print(f'Cargado el archivo de datos de la habilidad: {i}')
 	os.chdir('..')
@@ -259,8 +206,10 @@ def initialize_skills():
 def update_player_stats():
 	main_player.mhp = math.floor(parameters.increment_mhp * main_player.level + parameters.initial_mhp)
 	main_player.hp += math.floor(parameters.increment_mhp * main_player.level)
+	main_player.hp = min(main_player.hp, main_player.mhp)
 	main_player.mmp = math.floor(parameters.increment_mmp * main_player.level + parameters.initial_mmp)
 	main_player.mp += math.floor(parameters.increment_mmp * main_player.level)
+	main_player.mp = min(main_player.mp, main_player.mmp)
 	main_player.attack = math.floor(parameters.increment_atk * main_player.level + parameters.initial_atk)
 	main_player.defense = math.floor(parameters.increment_def * main_player.level + parameters.initial_def)
 	main_player.magic = math.floor(parameters.increment_mat * main_player.level + parameters.initial_mat)
@@ -284,7 +233,6 @@ class battler():
 	xp = 0
 	temp_xp = 0
 	level = 1
-	weight = 0
 	floor = 1
 	# Dibuja una barra de vida.
 	# scale: escala de la barra (a menor valor, más grande será la barra).
@@ -298,9 +246,9 @@ class battler():
 			color = bcolors.DARKYELLOW
 		elif (p > 0.5):
 			color = bcolors.GREEN
-		for i in range(max(math.ceil(self.hp/scale), 0)):
+		for i in range(max(math.ceil(p*scale), 0)):
 			print(color+"█", end=bcolors.CLEAR)
-		for i in range(max(math.floor((self.mhp-self.hp)/scale), 0)):
+		for i in range(max(math.floor(scale-p*scale), 0)):
 			print(" ",end="")
 		print("] ",end="")
 		print(f"{self.hp}/{self.mhp} PS\n")
@@ -314,9 +262,9 @@ class battler():
 		print("[",end="")
 		color = bcolors.BLUE
 		p = self.mp/self.mmp
-		for i in range(max(math.ceil(self.mp/scale), 0)):
+		for i in range(max(math.ceil(p*scale), 0)):
 			print(color+"█", end=bcolors.CLEAR)
-		for i in range(max(math.floor((self.mmp-self.mp)/scale), 0)):
+		for i in range(max(math.floor(scale-p*scale), 0)):
 			print(" ",end="")
 		print("] ",end="")
 		print(f"{self.mp}/{self.mmp} PM\n")
@@ -328,19 +276,34 @@ class player(battler):
 
 # Clase del enemigo
 class enemy(battler):
-	pass
+	def __init__(self, d):
+		self.name = d["name"]
+		self.element = d["element"]
+		self.mhp = d["mhp"]
+		self.hp = d["mhp"]
+		self.mmp = d["mmp"]
+		self.mp = d["mmp"]
+		self.attack = d["atk"]
+		self.defense = d["def"]
+		self.magic = d["mat"]
+		self.speed = d["spd"]
+		self.luck = d["lck"]
+		self.gold = d["gold"]
+		self.xp = d["xp"]
+		self.weight = d["weight"]
+		self.floor = d["floor"]
+		self.skills = d["skills"]
 
 class skill:
-	name = ""
-	description = ""
-	mpc = 0
-	pwr = 0
-	element = ""
-	heals = False
-	level = 0
-	e1 = ""
-	e2 = ""
-	e3 = ""
+	def __init__(self, d):
+		self.name = d["name"]
+		self.description = d["description"]
+		self.mpc = d["mpc"]
+		self.pwr = d["pwr"] // 10
+		self.element = d["element"]
+		self.heals = d["heals"]
+		self.level = d["level"] # set it to -1 if the skill cannot be learnt by the player (i.e., enemy/boss unique skills).
+		self.effects = d["effects"]
 
 class item:
 	name = ""
@@ -359,8 +322,8 @@ def perform_attack(attacker, target):
 	damage = max(attacker.attack - target.defense, 1)
 	target.hp -= damage
 	print(f"¡{target.name} recibió {damage} puntos de daño!")
-	target.draw_hp_bar(1)
-	target.draw_mp_bar(1)
+	target.draw_hp_bar(10)
+	target.draw_mp_bar(10)
 	if (target.hp > 0):
 		# Sigue vivo
 		pass
@@ -369,11 +332,11 @@ def perform_attack(attacker, target):
 		print(f"¡{target.name} ha sido asesinado!")
 
 def cast_skill(caster, skill, target):
-	print(f"¡{caster.name} lanza {skill.name}!")
+	print(f"¡{caster.name} usa {skill.name}!")
 	caster.mp -= skill.mpc
-	caster.draw_mp_bar(1)
+	caster.draw_mp_bar(10)
 	m = 1
-	print(f"{skill.element} VS {target.element}")
+	# print(f"{skill.element} VS {target.element}")
 	if skill.element in parameters.weakness[target.element]:
 		print("¡Es muy eficaz!")
 		m *= 2
@@ -387,13 +350,19 @@ def cast_skill(caster, skill, target):
 	target.hp -= damage
 	if damage > 0:
 		print(f"¡{target.name} recibió {damage} puntos de daño!")
-		target.draw_hp_bar(1)
+		target.draw_hp_bar(10)
 	if (target.hp > 0):
 		# Sigue vivo
 		pass
 	else:
 		# Enemigo derrotado
 		print(f"¡{target.name} ha sido asesinado!")
+
+def get_skill_by_name(name):
+	for s in skill_list:
+		if s.name == name:
+			return s
+	return None
 
 def check_level():
 	if (main_player.xp >= parameters.base_xp * math.pow(main_player.level, parameters.accelerator_a + parameters.accelerator_b) + math.pow(main_player.level - 1, parameters.extra_xp)):
@@ -419,7 +388,7 @@ def start_battle_loop():
 		random.shuffle(enemy_list)
 		main_enemy = enemy_list[0]
 		print(f"¡Un {main_enemy.name} te ataca!")
-		main_enemy.draw_hp_bar(1)
+		main_enemy.draw_hp_bar(10)
 		while main_player.hp > 0:
 			# Turno del jugador
 			print(f"[Turno de {main_player.name}]")
@@ -485,7 +454,7 @@ def start_battle_loop():
 						if selected_item.hpr > 0:
 							recover_hp(main_player, selected_item.hpr)
 							print(f"¡{main_player.name} recupera {selected_item.hpr} PS!")
-							main_player.draw_hp_bar(1)
+							main_player.draw_hp_bar(10)
 						if selected_item.mpr > 0:
 							recover_mp(main_player, selected_item.mpr)
 							print(f"¡{main_player.name} recupera {selected_item.hpr} PM!")
@@ -502,6 +471,10 @@ def start_battle_loop():
 				break
 			# Turno del enemigo
 			print(f"[Turno de {main_enemy.name}]")
+			for s in main_enemy.skills:
+				if s["weight"] < random.random() * 100:
+					cast_skill(main_enemy, get_skill_by_name(s["name"]), main_player)
+					continue
 			perform_attack(main_enemy, main_player)
 		if (main_player.hp > 0):
 			print(f"¡Ganaste! Recibes {main_enemy.gold} oro y {main_enemy.xp} PE.\n")
