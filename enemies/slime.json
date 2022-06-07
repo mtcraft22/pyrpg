@@ -1,16 +1,17 @@
 {
     "name": "Slime",
     "element": "water",
-    "mhp": 10,
+    "mhp": 60,
     "mmp": 0,
-    "atk": 3,
-    "def": 1,
+    "atk": 24,
+    "def": 5,
     "mat": 0,
-    "spd": 3,
-    "lck": 1,
+    "spd": 30,
+    "lck": 10,
     "weight": 25,
     "xp": 6,
     "gold": 2,
     "floor": 1,
-    "skills": []
+    "skills": [],
+    "max_encounters": 2
 }

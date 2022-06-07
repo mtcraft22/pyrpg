@@ -1,43 +1,47 @@
 ﻿import math
 import os, os.path
 import sys
+from sys import argv
 import random
 import time
 import copy
 import json
 from prettytable import PrettyTable
 
+import pygame
+from pygame.locals import *
+
 class parameters:
 	# nombre del juego
 	game_name = "PyRPG"
 	# mhp inicial, en nivel 1
-	initial_mhp = 10
+	initial_mhp = 45
 	# incremento de mhp por nivel
-	increment_mhp = 1.3
+	increment_mhp = 5
 	# mmp inicial, en nivel 1
-	initial_mmp = 7
+	initial_mmp = 9
 	# incremento de mmp por nivel
-	increment_mmp = 1.0
+	increment_mmp = 1
 	# ataque inicial, en nivel 1
-	initial_atk = 5
+	initial_atk = 32
 	# incremento de ataque por nivel
-	increment_atk = 1.2
+	increment_atk = 8.625
 	# defensa inicial, en nivel 1
-	initial_def = 2
+	initial_def = 20
 	# incremento de defensa por nivel
-	increment_def = 0.8
+	increment_def = 5
 	# magia inicial, en nivel 1
-	initial_mat = 4
+	initial_mat = 8
 	# incremento de magia por nivel
-	increment_mat = 0.7
+	increment_mat = 4.3125
 	# velocidad inicial, en nivel 1
-	initial_spd = 4
+	initial_spd = 32
 	# incremento de velocidad por nivel
-	increment_spd = 0.9
+	increment_spd = 8.65625
 	# suerte inicial, en nivel 1
-	initial_lck = 2
+	initial_lck = 32
 	# incremento de suerte por nivel
-	increment_lck = 0.6
+	increment_lck = 8.5
 	# Parámetros de curva de experiencia
 	base_xp = 10
 	extra_xp = 2
@@ -45,6 +49,9 @@ class parameters:
 	accelerator_b = 1
 	# Parámetros de la fase de descanso
 	inn_cost = 10
+	# Variables caché
+	t_gold = 0
+	t_xp = 0
 	# Diccionario de debilidades
 	weakness = {
 		"normal":	("fight"),
@@ -80,7 +87,7 @@ class parameters:
 		"fire"	:	("bug","steel","ice"),
 		"water"	:	("steel","fire","water","ice"),
 		"grass"	:	("ground","water","grass","electric"),
-		"electric":	("ground","steel","electric"),
+		"electric":	("steel","electric"),
 		"psychic":	("fight","psychic"),
 		"ice"	:	("ice"),
 		"dragon":	("fire","water","grass","electric"),
@@ -117,13 +124,59 @@ class bcolors:
 	BLUE = '\033[34m'
 	BOLD = '\033[1m'
 	CLEAR = '\033[0m'
+# Guardar partida
+def save_game(filename=""):
+	try:
+		with open(f"{filename}.json", 'w') as savefile:
+			save_dict = {}
+			save_dict["name"] = main_player.name
+			save_dict["element"] = main_player.element
+			save_dict["hp"] = main_player.hp
+			save_dict["mp"] = main_player.mp
+			save_dict["level"] = main_player.level
+			save_dict["gold"] = main_player.gold
+			save_dict["xp"] = main_player.xp
+			save_dict["floor"] = main_player.floor
+
+			save_items = []
+			for i in main_player.items:
+				save_items.append(copy.deepcopy(i.__dict__))
+			# print(save_items)
+			save_dict["items"] = copy.deepcopy(save_items)
+			savefile.write(json.dumps(save_dict))
+	except:
+		print(f"{bcolors.RED}ERROR{bcolors.CLEAR}: Algo salió mal en el intento guardado.")
+	else:
+		print("Partida guardada con éxito.")
+	time.sleep(1)		
+	os.system("cls")
+# Cargar partida
+def load_game(filename=""):
+	try:
+		with open(f"{filename}", 'r') as savefile:
+			json_content = json.loads(savefile.readline())
+			p = player()
+			p.name = json_content["name"]
+			p.element = json_content["element"]
+			p.hp = json_content["hp"]
+			p.mp = json_content["mp"]
+			p.level = json_content["level"]
+			p.gold = json_content["gold"]
+			p.xp = json_content["xp"]
+			p.floor = json_content["floor"]
+			for i in json_content["items"]:
+				p.items.append(item(i))
+			return copy.deepcopy(p)
+	except:
+		print(f"{bcolors.RED}ERROR{bcolors.CLEAR}: El fichero es inexistente o su contenido no es válido.")
+		sys.exit()
 
 def initialize_enemies():
 	el = []
 	os.chdir('./enemies/')
 	for i in os.listdir(f'{os.getcwd()}'):
 		if os.path.isfile(i):
-			file = open(i,"rt")
+			file = open(i,"rt",encoding="UTF-8")
 			raw = json.loads(file.read())
 			newenemy = enemy(raw)
 			el.append(newenemy)
@@ -148,46 +201,27 @@ def initialize_player():
 	p = player()
 	p.name = ""
 	p.element = "normal"
-	p.mhp = 10
-	p.hp = 10
-	p.mmp = 7
-	p.mp = 7
-	p.attack = 5
-	p.defense = 2
-	p.magic = 3
-	p.speed = 4
-	p.luck = 2
+	p.mhp = parameters.initial_mhp
+	p.hp = p.mhp
+	p.mmp = parameters.initial_mmp
+	p.mp = p.mmp
+	p.attack = parameters.initial_atk
+	p.defense = parameters.initial_def
+	p.magic = parameters.initial_mat
+	p.speed = parameters.initial_spd
+	p.luck = parameters.initial_lck
 	return p
 
 def initialize_shop_items():
 	si = []
 	os.chdir('./items')
 	for i in os.listdir(f'{os.getcwd()}'):
-		file = open(i,"rt")
-		newitem = item()
-		for x in file.readlines():
-			line = x
-			k = line.split("=")[0]
-			v = line.split("=")[1]
-
-			if (k == "name"):
-				newitem.name = v.rstrip("\n")
-			elif (k == "description"):
-				newitem.description = v.rstrip("\n")
-			elif (k == "cost"):
-				newitem.cost = int(v)
-			elif (k == "hpr"):
-				newitem.hpr = int(v)
-			elif (k == "mpr"):
-				newitem.mpr = int(v)
-			elif (k == "e1"):
-				newitem.e1 = v.rstrip("\n")
-			elif (k == "e2"):
-				newitem.e2 = v.rstrip("\n")
-			elif (k == "e3"):
-				newitem.e3 = v.rstrip("\n")
-		si.append(newitem)
-		print(f'Cargado el archivo de datos del objeto: {i}')
+		if os.path.isfile(i):
+			file = open(i,"rt",encoding="UTF-8")
+			raw = json.loads(file.read())
+			newitem = item(raw)
+			si.append(newitem)
+			print(f'Cargado el archivo de datos del objeto: {i}')
 	os.chdir('..')
 	return si
 
@@ -195,31 +229,46 @@ def initialize_skills():
 	sl = []
 	os.chdir('./skills')
 	for i in os.listdir(f'{os.getcwd()}'):
-		file = open(i,"rt")
-		raw = json.loads(file.read())
-		newskill = skill(raw)	
-		sl.append(newskill)
-		print(f'Cargado el archivo de datos de la habilidad: {i}')
+		if os.path.isfile(i):
+			file = open(i,"rt",encoding="UTF-8")
+			raw = json.loads(file.read())
+			newskill = skill(raw)	
+			sl.append(newskill)
+			print(f'Cargado el archivo de datos de la habilidad: {i}')
 	os.chdir('..')
 	return sl
 
-def update_player_stats():
-	main_player.mhp = math.floor(parameters.increment_mhp * main_player.level + parameters.initial_mhp)
-	main_player.hp += math.floor(parameters.increment_mhp * main_player.level)
-	main_player.hp = min(main_player.hp, main_player.mhp)
-	main_player.mmp = math.floor(parameters.increment_mmp * main_player.level + parameters.initial_mmp)
-	main_player.mp += math.floor(parameters.increment_mmp * main_player.level)
-	main_player.mp = min(main_player.mp, main_player.mmp)
-	main_player.attack = math.floor(parameters.increment_atk * main_player.level + parameters.initial_atk)
-	main_player.defense = math.floor(parameters.increment_def * main_player.level + parameters.initial_def)
-	main_player.magic = math.floor(parameters.increment_mat * main_player.level + parameters.initial_mat)
-	main_player.speed = math.floor(parameters.increment_spd * main_player.level + parameters.initial_spd)
-	main_player.luck = math.floor(parameters.increment_lck * main_player.level + parameters.initial_lck)
+def initialize_states():
+	sl = []
+	os.chdir('./states')
+	for i in os.listdir(f'{os.getcwd()}'):
+		if os.path.isfile(i):
+			file = open(i,"rt",encoding="UTF-8")
+			raw = json.loads(file.read())
+			newstate = state(raw)
+			sl.append(newstate)
+			print(f'Cargado el archivo de datos del estado: {i}')
+	os.chdir('..')
+	return sl
+
+def update_player_stats(p,r=True):
+	p.mhp = math.floor(parameters.increment_mhp * p.level + parameters.initial_mhp)
+	p.mmp = math.floor(parameters.increment_mmp * p.level + parameters.initial_mmp)
+	if r:
+		p.hp += math.floor(parameters.increment_mhp * p.level)
+		p.hp = min(p.hp, p.mhp)
+		p.mp += math.floor(parameters.increment_mmp * p.level)
+		p.mp = min(p.mp, p.mmp)
+	p.attack = math.floor(parameters.increment_atk * p.level + parameters.initial_atk)
+	p.defense = math.floor(parameters.increment_def * p.level + parameters.initial_def)
+	p.magic = math.floor(parameters.increment_mat * p.level + parameters.initial_mat)
+	p.speed = math.floor(parameters.increment_spd * p.level + parameters.initial_spd)
+	p.luck = math.floor(parameters.increment_lck * p.level + parameters.initial_lck)
 
 # Clase base esencial para cualquier participante en la batalla
 class battler():
 	name = ""
-	element = ""
+	element = "normal"
 	mhp = 0
 	hp = 0
 	mmp = 0
@@ -234,8 +283,10 @@ class battler():
 	temp_xp = 0
 	level = 1
 	floor = 1
+	states = []
+	did_attack = False
 	# Dibuja una barra de vida.
-	# scale: escala de la barra (a menor valor, más grande será la barra).
+	# scale: escala de la barra (a mayor valor, más grande será la barra).
 	def draw_hp_bar(self,scale):
 		print(f"{self.name} [",end="")
 		color = bcolors.CLEAR
@@ -253,7 +304,7 @@ class battler():
 		print("] ",end="")
 		print(f"{self.hp}/{self.mhp} PS\n")
 	# Dibuja una barra de magia.
-	# scale: escala de la barra (a menor valor, más grande será la barra).
+	# scale: escala de la barra (a mayor valor, más grande será la barra).
 	def draw_mp_bar(self,scale):
 		if self.mmp <= 0:
 			return
@@ -273,6 +324,22 @@ class battler():
 # Clase del jugador
 class player(battler):
 	items = []
+	def __init__(self):		
+		name = ""
+		element = "normal"
+		self.mhp = parameters.initial_mhp
+		self.hp = self.mhp
+		self.mmp = parameters.initial_mmp
+		self.mp = self.mmp
+		self.attack = parameters.initial_atk
+		self.defense = parameters.initial_def
+		self.magic = parameters.initial_mat
+		self.speed = parameters.initial_spd
+		self.luck = parameters.initial_lck
+		self.gold = 0
+		self.xp = 0
+		self.level = 1
+		self.floor = 1
 
 # Clase del enemigo
 class enemy(battler):
@@ -293,6 +360,7 @@ class enemy(battler):
 		self.weight = d["weight"]
 		self.floor = d["floor"]
 		self.skills = d["skills"]
+		self.max_encounters = d["max_encounters"]
 
 class skill:
 	def __init__(self, d):
@@ -306,21 +374,33 @@ class skill:
 		self.effects = d["effects"]
 
 class item:
-	name = ""
-	description = ""
-	cost = 0
-	hpr = 0
-	mpr = 0
-	e1 = ""
-	e2 = ""
-	e3 = ""
+	def __init__(self, d):
+		self.name = d["name"]
+		self.description = d["description"]
+		self.cost = d["cost"]
+		self.hpr = d["hpr"]
+		self.mpr = d["mpr"]
+		self.effects = d["effects"]
+
+class state:
+	def __init__(self, d):
+		self.name = d["name"]
+		self.display_name = d["display-name"]
+		self.description = d["description"]
+		self.restrictions = d["restrictions"]
+		self.effects = d["effects"]
+		self.messages = d["messages"]
+		self.health_color = d["health-color"]
 
 battlers = []
+
+def deal_damage(t, d):
+	t.hp -= d
 
 def perform_attack(attacker, target):
 	print(f"¡{attacker.name} ataca a {target.name}!\n")
 	damage = max(attacker.attack - target.defense, 1)
-	target.hp -= damage
+	deal_damage(target, damage)
 	print(f"¡{target.name} recibió {damage} puntos de daño!")
 	target.draw_hp_bar(10)
 	target.draw_mp_bar(10)
@@ -330,11 +410,16 @@ def perform_attack(attacker, target):
 	else:
 		# Enemigo derrotado
 		print(f"¡{target.name} ha sido asesinado!")
+		if target in current_enemies:			
+			parameters.t_gold += target.gold
+			parameters.t_xp += target.xp
+			current_enemies.remove(target)
 
 def cast_skill(caster, skill, target):
-	print(f"¡{caster.name} usa {skill.name}!")
-	caster.mp -= skill.mpc
-	caster.draw_mp_bar(10)
+	print(f"¡{caster.name} usa {bcolors.YELLOW + skill.name + bcolors.CLEAR}!")
+	if caster == main_player:
+		caster.mp -= skill.mpc
+		caster.draw_mp_bar(10)
 	m = 1
 	# print(f"{skill.element} VS {target.element}")
 	if skill.element in parameters.weakness[target.element]:
@@ -347,19 +432,55 @@ def cast_skill(caster, skill, target):
 		print(f"No afecta a {target.name}...")
 		m *= 0
 	damage = int(skill.pwr * caster.magic * m)
-	target.hp -= damage
+	deal_damage(target, damage)
 	if damage > 0:
 		print(f"¡{target.name} recibió {damage} puntos de daño!")
 		target.draw_hp_bar(10)
+	for s in skill.effects:
+		if s["chance"] >= random.random() * 100:
+			apply_state(target, s)
 	if (target.hp > 0):
 		# Sigue vivo
 		pass
 	else:
 		# Enemigo derrotado
 		print(f"¡{target.name} ha sido asesinado!")
+		parameters.t_gold += target.gold
+		parameters.t_xp += target.xp
+		if target in current_enemies:
+			current_enemies.remove(target)
+
+def apply_state(target, state):
+	if state in target.states:
+		# No se aplicará el estado si el objetivo ya lo posee.
+		# TODO: Mecánica de 'stacking' de estados.
+		return
+	state_ref = get_state_by_name(state["name"])
+	target.states.append(state_ref)
+	for m in state_ref.messages:
+		if m["name"] == "battler-got-effect":
+			base_message = m["message"]
+			print(base_message.replace("{0}", target.name))
+			break
+
+def apply_effect(t, e, m):
+	if e["name"] == "health-damage":
+		d = e["value"]
+		if e["relative"]:
+			d = t.mhp * d // 100
+		deal_damage(t, d)
+		print(m.replace("{0}", t.name))
+		t.draw_hp_bar(10)
+
 
 def get_skill_by_name(name):
 	for s in skill_list:
+		if s.name == name:
+			return s
+	return None
+
+def get_state_by_name(name):
+	for s in state_list:
 		if s.name == name:
 			return s
 	return None
@@ -370,7 +491,7 @@ def check_level():
 		main_player.xp -= (main_player.xp >= parameters.base_xp * math.pow(main_player.level, parameters.accelerator_a + parameters.accelerator_b) + math.pow(main_player.level - 1, parameters.extra_xp))
 		main_player.level += 1
 		print(f"¡Subiste de nivel! Ahora eres nivel {main_player.level}.")
-		update_player_stats()
+		update_player_stats(main_player)
 		for s in skill_list:
 			if main_player.level == s.level:
 				print(f"¡Has aprendido {s.name}!")
@@ -381,15 +502,45 @@ def recover_hp(target,amount):
 def recover_mp(target,amount):
 	target.mp = min(target.mp + amount, target.mmp)
 
+def do_enemy_turn(enemy):
+	if enemy.did_attack:
+		return
+	# Turno del enemigo
+	print(f"[Turno de {enemy.name}]")
+	enemy.did_attack = True
+	for s in enemy.skills:
+		if s["weight"] > random.random() * 100:
+			cast_skill(enemy, get_skill_by_name(s["name"]), main_player)
+			return
+	perform_attack(enemy, main_player)
+
+current_enemies = []
+
 def start_battle_loop():
 	initialize_floor()
 	print(f"[PISO {main_player.floor}]")
 	while len(enemy_list) > 0:
 		random.shuffle(enemy_list)
 		main_enemy = enemy_list[0]
-		print(f"¡Un {main_enemy.name} te ataca!")
-		main_enemy.draw_hp_bar(10)
+		for i in range(0, random.randint(1, main_enemy.max_encounters)):
+			enemy = copy.deepcopy(main_enemy)
+			enemy.name = enemy.name + " " + chr(ord('A') + i)
+			current_enemies.append(enemy)
+		if len(current_enemies) > 1:
+			print("¡Varios enemigos aparecieron!")
+			for e in current_enemies:
+				e.draw_hp_bar(10)
+		else:
+			print(f"¡{main_enemy.name} apareció!")
+			current_enemies[0].draw_hp_bar(10)
+		time.sleep(1)
 		while main_player.hp > 0:
+			# El enemigo atacará antes si es más veloz que el jugador.
+			for e in current_enemies:
+				if e.speed > main_player.speed:
+					do_enemy_turn(e)
+			if main_player.hp <= 0:
+				break
 			# Turno del jugador
 			print(f"[Turno de {main_player.name}]")
 			print(f"{bcolors.YELLOW}¿Qué desea hacer?{bcolors.CLEAR}")
@@ -399,7 +550,20 @@ def start_battle_loop():
 			print("4. Objeto")
 			opcion = input("Elige [1-4]: ")
 			if opcion == "1":
-				perform_attack(main_player, main_enemy)
+				print("Selecciona un objetivo: ")
+				i = 0
+				for e in current_enemies:
+					i += 1
+					print(f"{i} > ", end="")
+					e.draw_hp_bar(10)
+				try:
+					target = input(f"Elige [1-{i}] (o 0 para cancelar): ")
+					if target == "0":
+						continue
+					perform_attack(main_player, current_enemies[int(target) - 1])
+				except:
+					print(bcolors.RED + "OPCIÓN NO VÁLIDA.\n" + bcolors.CLEAR)
+					continue
 			elif opcion == "2":
 				# Menú de habilidad
 				table = PrettyTable()
@@ -407,7 +571,8 @@ def start_battle_loop():
 				i = 0
 				player_skill_list = []			
 				for s in skill_list:
-					if main_player.level >= s.level:
+					# Si la habilidad es propia de los monstruos, no será incluido en la lista de habilidades.
+					if main_player.level >= s.level and s.level != -1:
 						player_skill_list.append(copy.deepcopy(s))
 				if len(player_skill_list) > 0:
 					for s in player_skill_list:
@@ -429,6 +594,7 @@ def start_battle_loop():
 							continue
 					except:
 						print(bcolors.RED + "OPCIÓN NO VÁLIDA.\n" + bcolors.CLEAR)
+						continue
 				else:
 					print("No has aprendido ninguna habilidad.")
 					continue
@@ -457,29 +623,40 @@ def start_battle_loop():
 							main_player.draw_hp_bar(10)
 						if selected_item.mpr > 0:
 							recover_mp(main_player, selected_item.mpr)
-							print(f"¡{main_player.name} recupera {selected_item.hpr} PM!")
-						main_player.items.pop(opcion2 - 1)
-					except:
+							print(f"¡{main_player.name} recupera {selected_item.mpr} PM!")
+						main_player.items.pop(int(opcion2) - 1)
+					except TypeError:
 						print(bcolors.RED + "OPCIÓN NO VÁLIDA.\n" + bcolors.CLEAR)
+						continue
 				else:
 					print("No tienes objetos.")
 					continue
 			else:
 				print(bcolors.RED + "OPCIÓN NO VÁLIDA.\n" + bcolors.CLEAR)
 				continue
-			if (main_enemy.hp <= 0):
+			# Si el jugador tiene algún estado de fin de turno, se le aplicará.
+			for s in main_player.states:
+				for e in s.effects:
+					if e["lapse"] == "after-turn":
+						base_message = ""
+						for m in s.messages:
+							if m["name"] == "effect-persists":
+								base_message = m["message"]
+								break
+						apply_effect(main_player, e, base_message)
+			if (len(current_enemies) == 0):
 				break
-			# Turno del enemigo
-			print(f"[Turno de {main_enemy.name}]")
-			for s in main_enemy.skills:
-				if s["weight"] < random.random() * 100:
-					cast_skill(main_enemy, get_skill_by_name(s["name"]), main_player)
-					continue
-			perform_attack(main_enemy, main_player)
+			# El enemigo atacará después si es más lento que el jugador.
+			for e in current_enemies:
+				if e.speed <= main_player.speed:
+					do_enemy_turn(e)
+				e.did_attack = False
 		if (main_player.hp > 0):
-			print(f"¡Ganaste! Recibes {main_enemy.gold} oro y {main_enemy.xp} PE.\n")
-			main_player.gold += main_enemy.gold
-			main_player.xp += main_enemy.xp
+			print(f"¡Ganaste! Recibes {parameters.t_gold} oro y {parameters.t_xp} PE.\n")
+			main_player.gold += parameters.t_gold
+			main_player.xp += parameters.t_xp
+			parameters.t_gold = 0
+			parameters.t_xp = 0
 			enemy_list.pop(0)
 			check_level()
 			os.system("pause")
@@ -586,6 +763,9 @@ def break_time_loop():
 					os.system("pause")
 					os.system("cls")
 					break
+		elif opcion == "5":
+			save_game(parameters.game_name)
+			continue
 		elif (opcion == "9"):
 			print(f"{bcolors.RED}ATENCIÓN{bcolors.CLEAR}: Cualquier dato no guardado se perderá. ¿Salir de {parameters.game_name}?")
 			confirmacion = input("Elige [s/N]: ")
@@ -602,8 +782,22 @@ def break_time_loop():
 def start_game(save_file):
 	game_started = True
 	if save_file is not None:
-		print("¡Bienvenido de nuevo!")
-		return
+		update_player_stats(main_player,r=False)
+		print(f"¡Bienvenido de nuevo, {main_player.name}!\n")
+		print(f"Nivel {main_player.level}")
+		print(f"{main_player.gold} Oro")
+		print(f"Piso {main_player.floor}\n")
+		i = input("¿Eres tú? [s/N]: ").lower()
+		if i == "s":
+			print(f"Reanudando partida como {main_player.name}...")
+			time.sleep(2)
+			os.system("cls")
+			while True:
+				break_time_loop()
+				start_battle_loop()
+		else:
+			sys.exit()
+			return
 	else:
 		# Aquí pedimos un nombre para el personaje
 		print(f"¡Bienvenido a {parameters.game_name}!")
@@ -615,12 +809,13 @@ def start_game(save_file):
 			start_battle_loop()
 			break_time_loop()
 
+pygame.init()
+
 print(bcolors.CLEAR)
 random.seed()
 
 game_started = False
 enemy_pool = []
-main_player = initialize_player()
 
 enemy_pool = initialize_enemies()
 
@@ -629,7 +824,14 @@ shop_item_list = initialize_shop_items()
 
 skill_list = initialize_skills()
 
+state_list = initialize_states()
+
 # Limpiamos la pantalla y empezamos una partida nueva.
 time.sleep(1)
 os.system("cls")
-start_game(None)
+if len(argv) > 1:
+	main_player = load_game(argv[1])
+	start_game(argv[1])
+else:
+	main_player = player()
+	start_game(None)

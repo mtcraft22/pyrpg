@@ -1,0 +1,10 @@
+{
+    "name": "Rayo",
+    "description": "Lanza una descarga eléctrica contra el enemigo, haciendole daño y paralizándole.",
+    "mpc": 6,
+    "pwr": 100,
+    "element": "electric",
+    "heals": false,
+    "level": 5,
+    "effects": []
+}

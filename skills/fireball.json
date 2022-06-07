@@ -2,7 +2,7 @@
     "name": "Bola de fuego",
     "description": "Lanza una gran bola de fuego contra un enemigo, infligiéndole bastante daño.",
     "mpc": 4,
-    "pwr": 15,
+    "pwr": 50,
     "element": "fire",
     "heals": false,
     "level": 2,

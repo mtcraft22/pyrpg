@@ -1,21 +1,22 @@
 {
     "name": "Araña de cueva",
     "element": "bug",
-    "mhp": 20,
+    "mhp": 200,
     "mmp": 0,
-    "atk": 5,
-    "def": 4,
-    "mat": 0,
-    "spd": 8,
-    "lck": 4,
+    "atk": 80,
+    "def": 50,
+    "mat": 50,
+    "spd": 90,
+    "lck": 40,
     "weight": 5,
     "xp": 50,
     "gold": 20,
-    "floor": 4,
+    "floor": 6,
     "skills": [
         {
             "name": "Picadura venenosa", 
-            "weight": 5
+            "weight": 10
         }
-    ]
+    ],
+    "max_encounters": 1
 }

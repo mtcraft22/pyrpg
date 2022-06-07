@@ -1,0 +1,15 @@
+{
+    "name": "poison",
+    "display-name": "Veneno",
+    "description": "Tras realizar cualquier acción, el usuario perderá 10% de sus PS Máx.",
+    "restrictions": [],
+    "effects": [
+        {"name": "health-damage", "value": 10, "relative": true, "lapse": "after-turn", "turns": 4}
+    ],
+    "messages": [
+        {"name": "battler-got-effect", "message": "¡{0} ha sido envenenado!"},
+        {"name": "effect-persists", "message": "¡El veneno resta PS a {0}!"},
+        {"name": "battler-stop-effect", "message": "¡{0} ya no está envenenado!"}
+    ],
+    "health-color": "purple"
+}

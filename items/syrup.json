@@ -1,0 +1,8 @@
+{
+    "name": "Jarabe",
+    "description": "Restaura 40 PM",
+    "cost": 5,
+    "hpr": 0,
+    "mpr": 40,
+    "effects": []
+}

@@ -1,16 +1,17 @@
 {
     "name": "Gólem de Hierro",
     "element": "steel",
-    "mhp": 25,
+    "mhp": 350,
     "mmp": 0,
-    "atk": 7,
-    "def": 6,
+    "atk": 60,
+    "def": 30,
     "mat": 0,
-    "spd": 2,
-    "lck": 2,
-    "weight": 6,
+    "spd": 20,
+    "lck": 20,
+    "weight": 7,
     "xp": 20,
     "gold": 10,
     "floor": 4,
-    "skills": []
+    "skills": [],
+    "max_encounters": 1
 }

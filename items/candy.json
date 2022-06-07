@@ -1,0 +1,8 @@
+{
+    "name": "Caramelo",
+    "description": "Restaura 80 PS y 20 PM",
+    "cost": 20,
+    "hpr": 80,
+    "mpr": 20,
+    "effects": []
+}

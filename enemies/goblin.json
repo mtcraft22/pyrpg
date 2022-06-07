@@ -1,16 +1,17 @@
 {
     "name": "Goblin",
     "element": "ground",
-    "mhp": 15,
+    "mhp": 100,
     "mmp": 0,
-    "atk": 4,
-    "def": 2,
+    "atk": 42,
+    "def": 10,
     "mat": 0,
-    "spd": 4,
-    "lck": 2,
-    "weight": 10,
-    "xp": 10,
-    "gold": 5,
+    "spd": 35,
+    "lck": 15,
+    "weight": 12,
+    "xp": 6,
+    "gold": 2,
     "floor": 2,
-    "skills": []
+    "skills": [],
+    "max_encounters": 1
 }
