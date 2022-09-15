@@ -6,5 +6,7 @@
     "element": "electric",
     "heals": false,
     "level": 5,
-    "effects": []
+    "effects": [
+        {"name":"paralized", "chance": 20}
+    ]
 }

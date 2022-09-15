@@ -445,9 +445,9 @@ def cast_skill(caster, skill, target):
 	else:
 		# Enemigo derrotado
 		print(f"¡{target.name} ha sido asesinado!")
-		parameters.t_gold += target.gold
-		parameters.t_xp += target.xp
-		if target in current_enemies:
+		if target in current_enemies:			
+			parameters.t_gold += target.gold
+			parameters.t_xp += target.xp
 			current_enemies.remove(target)
 
 def apply_state(target, state):
@@ -471,6 +471,9 @@ def apply_effect(t, e, m):
 		deal_damage(t, d)
 		print(m.replace("{0}", t.name))
 		t.draw_hp_bar(10)
+	if e["name"] == "cannot-attack":
+		t.did_attack = True
+		print(m.replace("{0}", t.name))
 
 
 def get_skill_by_name(name):
@@ -588,7 +591,20 @@ def start_battle_loop():
 							continue
 						selected_skill = player_skill_list[int(opcion2) - 1]
 						if main_player.mp >= selected_skill.mpc:
-							cast_skill(main_player, selected_skill, main_enemy)
+							print("Selecciona un objetivo: ")
+							i = 0
+							for e in current_enemies:
+								i += 1
+								print(f"{i} > ", end="")
+								e.draw_hp_bar(10)
+							try:
+								target = input(f"Elige [1-{i}] (o 0 para cancelar): ")
+								if target == "0":
+									continue
+								cast_skill(main_player, selected_skill, current_enemies[int(target) - 1])
+							except:
+								print(bcolors.RED + "OPCIÓN NO VÁLIDA.\n" + bcolors.CLEAR)
+								continue
 						else:
 							print(bcolors.RED + "PM Insuficientes.\n" + bcolors.CLEAR)
 							continue

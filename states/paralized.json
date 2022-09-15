@@ -1,0 +1,15 @@
+{
+    "name": "paralized",
+    "display-name": "Paralizado",
+    "description": "Tiene 50% de probabilidad de no poder atacar.",
+    "restrictions": [],
+    "effects": [
+        {"name": "cannot-attack", "value": 10, "relative": false, "lapse": "before-turn", "turns": 3}
+    ],
+    "messages": [
+        {"name": "battler-got-effect", "message": "¡{0} ha sido paralizado! ¡Quizás no se pueda mover!"},
+        {"name": "effect-persists", "message": "¡{0} ha sido paralizado! ¡Quizás no se pueda mover!"},
+        {"name": "battler-stop-effect", "message": "¡{0} ya no está paralizado!"}
+    ],
+    "health-color": "yellow"
+}
