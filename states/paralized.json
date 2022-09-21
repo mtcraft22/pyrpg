@@ -8,7 +8,7 @@
     ],
     "messages": [
         {"name": "battler-got-effect", "message": "¡{0} ha sido paralizado! ¡Quizás no se pueda mover!"},
-        {"name": "effect-persists", "message": "¡{0} ha sido paralizado! ¡Quizás no se pueda mover!"},
+        {"name": "effect-persists", "message": "¡{0} está paralizado! ¡Quizás no se pueda mover!"},
         {"name": "battler-stop-effect", "message": "¡{0} ya no está paralizado!"}
     ],
     "health-color": "yellow"

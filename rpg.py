@@ -284,6 +284,8 @@ class battler():
 	level = 1
 	floor = 1
 	states = []
+	buffs = []
+	debuffs = []
 	did_attack = False
 	# Dibuja una barra de vida.
 	# scale: escala de la barra (a mayor valor, más grande será la barra).
@@ -463,6 +465,24 @@ def apply_state(target, state):
 			print(base_message.replace("{0}", target.name))
 			break
 
+def apply_buff(target, stat, value, show=True):
+	temp_buff = {
+		"stat": stat
+		"value": value
+	}
+	target.buffs.append(temp_buff)
+	if show:
+		if stat == "atk":
+			print(f"¡El ataque de {target.name} ha subido!")
+		if stat == "def":
+			print(f"¡La defensa de {target.name} ha subido!")
+		if stat == "mat":
+			print(f"¡El ataque mágico de {target.name} ha subido!")
+		if stat == "spd":
+			print(f"¡La velocidad de {target.name} ha subido!")
+		if stat == "lck":
+			print(f"¡La suerte de {target.name} ha subido!")
+
 def apply_effect(t, e, m):
 	if e["name"] == "health-damage":
 		d = e["value"]
@@ -475,6 +495,16 @@ def apply_effect(t, e, m):
 		t.did_attack = True
 		print(m.replace("{0}", t.name))
 
+def use_item(t, i):
+	print(f"¡{t.name} usa {i.name}!")
+	if i.hpr > 0:
+		recover_hp(t, i.hpr)
+		print(f"¡{t.name} recupera {i.hpr} PS!")
+		main_player.draw_hp_bar(10)
+	if i.mpr > 0:
+		recover_mp(t, i.mpr)
+		print(f"¡{t.name} recupera {i.mpr} PM!")
+	t.items.remove(i)
 
 def get_skill_by_name(name):
 	for s in skill_list:
@@ -632,15 +662,7 @@ def start_battle_loop():
 							print(bcolors.RED + "OPCIÓN NO VÁLIDA.\n" + bcolors.CLEAR)
 							continue
 						selected_item = main_player.items[int(opcion2) - 1]
-						print(f"¡{main_player.name} usa {selected_item.name}!")
-						if selected_item.hpr > 0:
-							recover_hp(main_player, selected_item.hpr)
-							print(f"¡{main_player.name} recupera {selected_item.hpr} PS!")
-							main_player.draw_hp_bar(10)
-						if selected_item.mpr > 0:
-							recover_mp(main_player, selected_item.mpr)
-							print(f"¡{main_player.name} recupera {selected_item.mpr} PM!")
-						main_player.items.pop(int(opcion2) - 1)
+						use_item(main_player, selected_item)
 					except TypeError:
 						print(bcolors.RED + "OPCIÓN NO VÁLIDA.\n" + bcolors.CLEAR)
 						continue
@@ -733,7 +755,6 @@ def break_time_loop():
 		elif opcion == "3":
 			while True:
 				# Bucle de la tienda
-				
 				print(f"{bcolors.YELLOW}Tendero José{bcolors.CLEAR}: ¡Hola! ¿En que puedo ayudarle?")
 				print(f"Dinero disponible: {main_player.gold}")
 				print("1. Comprar")

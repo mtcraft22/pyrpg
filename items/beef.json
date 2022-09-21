@@ -1,0 +1,11 @@
+{
+    "name": "Ternera",
+    "description": "Restaura 150 PS y aumenta el ataque en un 20%.",
+    "cost": 40,
+    "hpr": 150,
+    "mpr": 0,
+    "effects": [],
+    "buffs": [
+        {"stat": "atk", "value": 20}
+    ]
+}
