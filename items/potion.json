@@ -4,5 +4,6 @@
     "cost": 8,
     "hpr": 100,
     "mpr": 0,
-    "effects": []
+    "effects": [],
+    "buffs": []
 }

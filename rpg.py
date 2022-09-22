@@ -383,6 +383,7 @@ class item:
 		self.hpr = d["hpr"]
 		self.mpr = d["mpr"]
 		self.effects = d["effects"]
+		self.buffs = d["buffs"]
 
 class state:
 	def __init__(self, d):
@@ -401,7 +402,15 @@ def deal_damage(t, d):
 
 def perform_attack(attacker, target):
 	print(f"¡{attacker.name} ataca a {target.name}!\n")
-	damage = max(attacker.attack - target.defense, 1)
+	ma = 1
+	mb = 1
+	for b in attacker.buffs:
+		if b["stat"] == "atk":
+			ma += int(b["value"]) * 0.01
+	for b in target.buffs:
+		if b["stat"] == "def":
+			mb += int(b["value"]) * 0.01
+	damage = max(int(attacker.attack * ma) - int(target.defense * mb), 1)
 	deal_damage(target, damage)
 	print(f"¡{target.name} recibió {damage} puntos de daño!")
 	target.draw_hp_bar(10)
@@ -465,9 +474,12 @@ def apply_state(target, state):
 			print(base_message.replace("{0}", target.name))
 			break
 
+def clear_states(target):
+	target.states.clear()
+
 def apply_buff(target, stat, value, show=True):
 	temp_buff = {
-		"stat": stat
+		"stat": stat,
 		"value": value
 	}
 	target.buffs.append(temp_buff)
@@ -504,6 +516,8 @@ def use_item(t, i):
 	if i.mpr > 0:
 		recover_mp(t, i.mpr)
 		print(f"¡{t.name} recupera {i.mpr} PM!")
+	for b in i.buffs:
+		apply_buff(t, b["stat"], b["value"], True)
 	t.items.remove(i)
 
 def get_skill_by_name(name):
@@ -743,6 +757,7 @@ def break_time_loop():
 					time.sleep(2)
 					recover_hp(main_player, 9999)
 					recover_mp(main_player, 9999)
+					clear_states(main_player)
 					print("Te sientes lleno de energía.")
 					os.system("pause")
 					os.system("cls")
